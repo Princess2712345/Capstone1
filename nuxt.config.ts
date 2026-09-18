@@ -1,30 +1,32 @@
-function hushDevtoolsVite8Warning(config: { customLogger?: { warn: (...args: unknown[]) => void } }) {
-  const logger = config.customLogger
-  if (!logger || '__valenciaDevtoolsWarnPatched' in logger) return
-  const original = logger.warn.bind(logger)
-  logger.warn = (msg, ...rest) => {
-    if (
-      typeof msg === 'string'
-      && msg.includes('nuxt:devtools:config-retriever')
-      && msg.includes('applyToEnvironment')
-    ) {
-      return
+function stripBrokenDevtoolsPlugin(plugins: unknown) {
+  if (!Array.isArray(plugins)) return
+  for (let i = 0; i < plugins.length; i++) {
+    const plugin = plugins[i]
+    if (Array.isArray(plugin)) {
+      stripBrokenDevtoolsPlugin(plugin)
+      continue
     }
-    original(msg, ...rest)
+    if (
+      plugin
+      && typeof plugin === 'object'
+      && 'name' in plugin
+      && (plugin.name === 'nuxt:devtools:config' || plugin.name === 'nuxt:devtools:config-retriever')
+      && 'applyToEnvironment' in plugin
+    ) {
+      plugins[i] = { name: 'nuxt:devtools:config-retriever', enforce: 'post' }
+    }
   }
-  Object.defineProperty(logger, '__valenciaDevtoolsWarnPatched', { value: true })
 }
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
-  // @nuxt/devtools 3.4.2 puts `configResolved` on a plugin returned from
-  // `applyToEnvironment`. Vite 8 never calls that hook (shared-config only)
-  // and prints this warning for client + SSR. Harmless; hush until DevTools ships a fix.
+  // Vite 8 warns because DevTools 3.4.2 returns a `configResolved` plugin from
+  // applyToEnvironment. Replace that plugin before Vite resolves environments.
   hooks: {
-    'vite:extendConfig'(config) {
-      hushDevtoolsVite8Warning(config)
+    'vite:extend'({ config }) {
+      stripBrokenDevtoolsPlugin(config.plugins)
     }
   },
   css: ['~/assets/css/main.css'],

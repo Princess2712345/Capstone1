@@ -1,138 +1,66 @@
 <script setup lang="ts">
-const {
-  facilities,
-  doctors,
-  appointments,
-  prescriptions,
-  criticalBatches,
-  rhu1Load,
-  flash,
-  facById,
-  drugById
-} = usePlatform()
-
-const esiMix = computed(() => {
-  const counts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
-  for (const a of appointments.value) {
-    if (a.esi) counts[a.esi]++
-  }
-  return counts
-})
-
-const inQueue = computed(() => appointments.value.filter(a => a.patientName && a.status !== 'done' && a.status !== 'released').length)
-const rxOpen = computed(() => prescriptions.value.filter(p => p.status !== 'dispensed').length)
-const tele = computed(() => doctors.value.filter(d => d.role === 'telehealth' || d.role === 'visiting').length)
+definePageMeta({ layout: 'public' })
 </script>
 
 <template>
   <div>
-    <header class="page-head">
+    <section class="hero">
       <div>
-        <div class="brand-kicker" style="color: var(--gold)">City Health Office · 18 September 2026</div>
-        <h1>Valencia municipal command floor</h1>
+        <div class="brand-kicker" style="color: var(--leaf)">City Health Office · Bukidnon</div>
+        <h1>Municipal health operations for Valencia City</h1>
         <p class="lede">
-          Live picture of RHU 1 (Poblacion), RHU 2 (Bagontaas), and satellite BHS load —
-          specialty routing, 15-minute hybrid slots, and FEFO medicine risk on one desk.
+          One desk for AI-assisted specialty routing, hybrid online and walk-in queues,
+          and FEFO prescription tracking across RHUs and Barangay Health Stations.
         </p>
-      </div>
-    </header>
-
-    <div v-if="flash" class="flash">{{ flash }}</div>
-
-    <section class="grid-4" style="margin-bottom: 16px">
-      <article class="card">
-        <div class="stat-value">{{ rhu1Load }}%</div>
-        <div class="stat-label">RHU 1 walk-in buffer</div>
-        <p class="stat-note">Hard cap nearly reached. Low-acuity overflow should pivot to Mailag or RHU 2.</p>
-      </article>
-      <article class="card">
-        <div class="stat-value">{{ inQueue }}</div>
-        <div class="stat-label">Named slots in play</div>
-        <p class="stat-note">Online holds auto-release 15 minutes after start if unchecked.</p>
-      </article>
-      <article class="card">
-        <div class="stat-value">{{ rxOpen }}</div>
-        <div class="stat-label">Open e-prescriptions</div>
-        <p class="stat-note">Single-use QR. Partial fills mint transfer vouchers between facilities.</p>
-      </article>
-      <article class="card">
-        <div class="stat-value">{{ criticalBatches.length }}</div>
-        <div class="stat-label">Critical / near-expiry lots</div>
-        <p class="stat-note">FEFO queue prefers earliest expiry before any peer transfer.</p>
-      </article>
-    </section>
-
-    <section class="split">
-      <article class="card">
-        <h2>Facility buffer matrix</h2>
-        <div v-for="f in facilities" :key="f.id" style="margin-bottom: 12px">
-          <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:4px">
-            <strong>{{ f.name }}</strong>
-            <span class="muted">{{ f.type }} · {{ f.barangay }} · {{ f.walkInUsed }}/{{ f.walkInCap }}</span>
-          </div>
-          <div class="meter" :class="{ full: f.walkInUsed / f.walkInCap >= 1, hot: f.walkInUsed / f.walkInCap >= 0.8 }">
-            <span :style="{ width: Math.min(100, (f.walkInUsed / f.walkInCap) * 100) + '%' }" />
-          </div>
+        <div style="display:flex; gap:10px; margin-top:22px; flex-wrap:wrap">
+          <NuxtLink class="btn" to="/signup">Create staff account</NuxtLink>
+          <NuxtLink class="btn secondary" to="/login">Log in to the command floor</NuxtLink>
         </div>
-      </article>
-      <article class="card">
-        <h2>ESI mix on the board</h2>
-        <p class="muted">Levels 1–2 never sit in outpatient queues. Levels 3–5 occupy specialist or GP clinics.</p>
-        <table>
-          <thead>
-            <tr><th>Level</th><th>Meaning</th><th>Today</th></tr>
-          </thead>
-          <tbody>
-            <tr><td><span class="badge esi-1">ESI 1</span></td><td>Resuscitation / ER + transport</td><td>{{ esiMix[1] }}</td></tr>
-            <tr><td><span class="badge esi-2">ESI 2</span></td><td>Emergency bypass</td><td>{{ esiMix[2] }}</td></tr>
-            <tr><td><span class="badge esi-3">ESI 3</span></td><td>Urgent clinic</td><td>{{ esiMix[3] }}</td></tr>
-            <tr><td><span class="badge esi-4">ESI 4</span></td><td>Less urgent</td><td>{{ esiMix[4] }}</td></tr>
-            <tr><td><span class="badge esi-5">ESI 5</span></td><td>Non-urgent / Konsulta</td><td>{{ esiMix[5] }}</td></tr>
-          </tbody>
-        </table>
-        <p class="stat-note">{{ tele }} visiting or telehealth consultants are in the city-wide matrix today.</p>
-      </article>
+      </div>
+      <aside class="hero-panel">
+        <div class="brand-kicker" style="color:#bfdbfe">Today’s municipal picture</div>
+        <h2>RHU 1 walk-in buffer at 90%</h2>
+        <p>Low-acuity overflow routes to RHU 2 Bagontaas and BHS Mailag. ESI 1–2 never wait in OPD.</p>
+        <ul>
+          <li>15-minute slots with no-show release</li>
+          <li>Cebuano and English symptom mapping</li>
+          <li>Konsulta e-Rx with single-use QR</li>
+        </ul>
+      </aside>
     </section>
 
-    <section class="grid-2" style="margin-top: 16px">
-      <article class="card">
-        <h2>Physician load vs daily cap</h2>
-        <table>
-          <thead>
-            <tr><th>Clinician</th><th>Role</th><th>Site</th><th>Load</th></tr>
-          </thead>
-          <tbody>
-            <tr v-for="d in doctors" :key="d.id">
-              <td>{{ d.name }}<div class="muted">{{ d.specialty }}</div></td>
-              <td>{{ d.role }}</td>
-              <td>{{ facById(d.facilityId)?.name }}</td>
-              <td>
-                {{ d.todayLoad }}/{{ d.dailyCap }}
-                <div class="meter" :class="{ hot: d.todayLoad / d.dailyCap >= 0.85, full: d.todayLoad >= d.dailyCap }" style="margin-top:6px; width:88px">
-                  <span :style="{ width: Math.min(100, (d.todayLoad / d.dailyCap) * 100) + '%' }" />
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </article>
-      <article class="card">
-        <h2>Medicine exceptions</h2>
-        <table>
-          <thead>
-            <tr><th>Lot</th><th>Item</th><th>Site</th><th>Qty</th><th>Expiry</th></tr>
-          </thead>
-          <tbody>
-            <tr v-for="b in criticalBatches" :key="b.id">
-              <td>{{ b.lot }}</td>
-              <td>{{ drugById(b.drugId)?.generic }}</td>
-              <td>{{ facById(b.facilityId)?.name }}</td>
-              <td :class="b.qty <= 20 ? 'stock-critical' : 'stock-moderate'">{{ b.qty }}</td>
-              <td>{{ b.expiry }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </article>
+    <section id="modules" class="band">
+      <h2>Three operational domains</h2>
+      <div class="grid-3" style="margin-top:16px">
+        <article class="card">
+          <div class="stat-label">Module 1</div>
+          <h3>Specialty routing</h3>
+          <p class="muted">Unstructured complaints map to ICD-10, ESI 1–5, and a named consultant. Saturated specialists overflow to a GP with prerequisite labs queued.</p>
+        </article>
+        <article class="card">
+          <div class="stat-label">Module 2</div>
+          <h3>Hybrid scheduling</h3>
+          <p class="muted">Online holds, BHW walk-in buffers, satellite reroute at cap, and emergency override that rolls non-urgent windows by 15 minutes.</p>
+        </article>
+        <article class="card">
+          <div class="stat-label">Module 3</div>
+          <h3>e-Rx and supply</h3>
+          <p class="muted">PhilHealth Konsulta generics, allergy checks, FEFO lots, inter-BHS vouchers, and CHO purchase requisitions from seasonal demand.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="facilities" class="band">
+      <h2>Covered sites</h2>
+      <p class="lede" style="margin:8px 0 16px">Central hubs and satellite stations in the Valencia catchment.</p>
+      <div class="grid-3">
+        <article class="card"><strong>Valencia RHU 1</strong><p class="muted">Poblacion · primary walk-in hub</p></article>
+        <article class="card"><strong>Valencia RHU 2</strong><p class="muted">Bagontaas · overflow and tele-endo</p></article>
+        <article class="card"><strong>City Infirmary ER</strong><p class="muted">ESI 1–2 bypass and transport</p></article>
+        <article class="card"><strong>BHS Mailag</strong><p class="muted">Barangay intake and ORS stock</p></article>
+        <article class="card"><strong>BHS Lumbayao</strong><p class="muted">Peripheral buffer and transfers</p></article>
+        <article class="card"><strong>BHS San Carlos</strong><p class="muted">Pediatric and school-season load</p></article>
+      </div>
     </section>
   </div>
 </template>

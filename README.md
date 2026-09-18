@@ -17,7 +17,9 @@ Open [http://localhost:3000](http://localhost:3000).
 
 | Route | Module |
 | --- | --- |
-| `/` | City Health command floor (facility load, ESI mix, clinician caps, critical lots) |
+| `/` | Public landing |
+| `/login` · `/signup` | Staff access (demo `cho@valencia.gov.ph` / `careops`) |
+| `/ops` | City Health command floor |
 | `/triage` | Symptom extraction (English + Cebuano cues), ICD-10 mapping, ESI 1–5, specialist vs GP overflow, prerequisite labs |
 | `/schedule` | 15-minute online vs walk-in board, buffer hard cap, satellite reroute, no-show release |
 | `/pharmacy` | Konsulta e-Rx, interaction/allergy alerts, PRC signature + QR, FEFO dispense and transfer vouchers |
