@@ -55,9 +55,23 @@ export function useAuth() {
     return null
   }
 
+  function registerStaff(input: StaffAccount) {
+    const list = accounts.value ?? SEED
+    if (!input.name.trim() || !input.email.trim() || !input.password) {
+      return 'Name, email, and password are required.'
+    }
+    if (input.password.length < 6) return 'Password must be at least 6 characters.'
+    if (list.some(a => a.email.toLowerCase() === input.email.trim().toLowerCase())) {
+      return 'That work email is already registered.'
+    }
+    const record = { ...input, email: input.email.trim().toLowerCase(), name: input.name.trim() }
+    accounts.value = [...(accounts.value ?? SEED), record]
+    return null
+  }
+
   function logout() {
     session.value = null
   }
 
-  return { accounts, session, login, signup, logout }
+  return { accounts, session, login, signup, registerStaff, logout }
 }

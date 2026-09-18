@@ -2,7 +2,7 @@
 const {
   patients,
   facilities,
-  flash,
+  doctors,
   lastTriage,
   runTriage,
   commitTriageToSchedule,
@@ -47,9 +47,8 @@ function assign() {
           scores ESI 1–5, and load-balances across Valencia consultants. High acuity never waits in OPD.
         </p>
       </div>
+      <NuxtLink class="btn secondary" to="/patients">Open registry</NuxtLink>
     </header>
-
-    <div v-if="flash" class="flash" :class="{ alert: lastTriage?.bypassEr }">{{ flash }}</div>
 
     <section class="split">
       <article class="card">
@@ -146,13 +145,14 @@ function assign() {
       <p class="muted">Full-time, visiting, on-call, and regional telehealth seats serving Valencia today.</p>
       <table>
         <thead>
-          <tr><th>Facility</th><th>Barangay</th><th>Walk-in buffer</th></tr>
+          <tr><th>Clinician</th><th>Specialty</th><th>Site</th><th>Load</th></tr>
         </thead>
         <tbody>
-          <tr v-for="f in facilities" :key="f.id">
-            <td>{{ f.name }}</td>
-            <td>{{ f.barangay }}</td>
-            <td>{{ f.walkInUsed }} / {{ f.walkInCap }}</td>
+          <tr v-for="d in doctors" :key="d.id">
+            <td>{{ d.name }}</td>
+            <td>{{ d.specialty }}</td>
+            <td>{{ facilities.find(f => f.id === d.facilityId)?.name }}</td>
+            <td>{{ d.todayLoad }}/{{ d.dailyCap }}</td>
           </tr>
         </tbody>
       </table>

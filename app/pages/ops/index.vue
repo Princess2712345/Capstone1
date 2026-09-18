@@ -6,7 +6,7 @@ const {
   prescriptions,
   criticalBatches,
   rhu1Load,
-  flash,
+  inQueue,
   facById,
   drugById
 } = usePlatform()
@@ -19,8 +19,7 @@ const esiMix = computed(() => {
   return counts
 })
 
-const inQueue = computed(() => appointments.value.filter(a => a.patientName && a.status !== 'done' && a.status !== 'released').length)
-const rxOpen = computed(() => prescriptions.value.filter(p => p.status !== 'dispensed').length)
+const rxOpen = computed(() => prescriptions.value.filter(p => p.status !== 'dispensed' && p.status !== 'voided').length)
 const tele = computed(() => doctors.value.filter(d => d.role === 'telehealth' || d.role === 'visiting').length)
 </script>
 
@@ -31,13 +30,14 @@ const tele = computed(() => doctors.value.filter(d => d.role === 'telehealth' ||
         <div class="brand-kicker" style="color: var(--leaf)">City Health Office · 18 September 2026</div>
         <h1>Valencia municipal command floor</h1>
         <p class="lede">
-          Live picture of RHU 1 (Poblacion), RHU 2 (Bagontaas), and satellite BHS load —
-          specialty routing, 15-minute hybrid slots, and FEFO medicine risk on one desk.
+          Live picture of RHU 1, RHU 2, satellite BHS, and Infirmary ER — specialty routing, 15-minute hybrid slots, charts, e-Rx, and FEFO risk on one desk.
         </p>
       </div>
+      <div class="toolbar">
+        <NuxtLink class="btn" to="/triage">Route a complaint</NuxtLink>
+        <NuxtLink class="btn secondary" to="/schedule">Open queue</NuxtLink>
+      </div>
     </header>
-
-    <div v-if="flash" class="flash">{{ flash }}</div>
 
     <section class="grid-4" style="margin-bottom: 16px">
       <article class="card">
@@ -48,7 +48,7 @@ const tele = computed(() => doctors.value.filter(d => d.role === 'telehealth' ||
       <article class="card">
         <div class="stat-value">{{ inQueue }}</div>
         <div class="stat-label">Named slots in play</div>
-        <p class="stat-note">Online holds auto-release 15 minutes after start if unchecked.</p>
+        <p class="stat-note">Check in, start consult, complete, or release no-shows from the hybrid queue.</p>
       </article>
       <article class="card">
         <div class="stat-value">{{ rxOpen }}</div>
@@ -65,9 +65,9 @@ const tele = computed(() => doctors.value.filter(d => d.role === 'telehealth' ||
     <section class="split">
       <article class="card">
         <h2>Facility buffer matrix</h2>
-        <div v-for="f in facilities" :key="f.id" style="margin-bottom: 12px">
+        <div v-for="f in facilities.filter(x => x.walkInCap > 0)" :key="f.id" style="margin-bottom: 12px">
           <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:4px">
-            <strong>{{ f.name }}</strong>
+            <NuxtLink class="row-link" to="/facilities">{{ f.name }}</NuxtLink>
             <span class="muted">{{ f.type }} · {{ f.barangay }} · {{ f.walkInUsed }}/{{ f.walkInCap }}</span>
           </div>
           <div class="meter" :class="{ full: f.walkInUsed / f.walkInCap >= 1, hot: f.walkInUsed / f.walkInCap >= 0.8 }">

@@ -5,9 +5,9 @@ const {
   prescriptions,
   facilities,
   drugs,
-  flash,
   createRx,
   fulfill,
+  voidRx,
   patientById,
   docById,
   facById,
@@ -16,7 +16,9 @@ const {
 
 const rxPatient = ref(patients.value[0]?.id ?? '')
 const rxDoctor = ref(doctors.value.find(d => d.specialty === 'General Practice')?.id ?? '')
-const selectedDrugs = ref<string[]>(['metformin', 'ibuprofen'])
+const selectedDrugs = ref<string[]>(['metformin'])
+const qty = ref(30)
+const sig = ref('1 tab as directed after meals')
 const scan = ref('RX-VLC-7K2M')
 const scanFac = ref('rhu1')
 const lastSigned = ref<(typeof prescriptions.value)[0] | null>(null)
@@ -30,11 +32,7 @@ function sign() {
   const p = patients.value.find(x => x.id === rxPatient.value)
   const d = doctors.value.find(x => x.id === rxDoctor.value)
   if (!p || !d || !selectedDrugs.value.length) return
-  lastSigned.value = createRx(p, d, selectedDrugs.value, 30)
-}
-
-function doScan() {
-  fulfill(scan.value, scanFac.value)
+  lastSigned.value = createRx(p, d, selectedDrugs.value, qty.value, sig.value)
 }
 </script>
 
@@ -45,13 +43,10 @@ function doScan() {
         <div class="brand-kicker" style="color: var(--gold)">Module 3 · Clinical e-Rx</div>
         <h1>Konsulta prescribing &amp; QR dispensing</h1>
         <p class="lede">
-          Generic names and benefit codes, allergy and interaction checks against the local EHR,
-          physician PRC signature, and one-click FEFO fulfillment — including partial fills with a BHS voucher.
+          Generic names and benefit codes, allergy and interaction checks, physician PRC signature, FEFO fulfillment, void, and BHS vouchers.
         </p>
       </div>
     </header>
-
-    <div v-if="flash" class="flash">{{ flash }}</div>
 
     <section class="split">
       <article class="card">
@@ -69,13 +64,14 @@ function doScan() {
               <option v-for="d in doctors" :key="d.id" :value="d.id">{{ d.name }} · {{ d.specialty }}</option>
             </select>
           </label>
+          <label class="field"><span>Quantity</span><input v-model.number="qty" type="number" min="1"></label>
+          <label class="field"><span>Directions</span><input v-model="sig"></label>
         </div>
         <p class="muted">
-          {{ patientById(rxPatient)?.conditions.join(', ') }} · current meds
+          {{ patientById(rxPatient)?.conditions.join(', ') || 'No listed conditions' }} · current meds
           {{ patientById(rxPatient)?.meds.join(', ') || 'none' }} · allergies
           {{ patientById(rxPatient)?.allergies.join(', ') || 'none' }}
         </p>
-        <p class="muted">Select Konsulta generics. Ibuprofen is loaded so you can see an interaction with Amlodipine on Rosa’s chart.</p>
         <div class="chips">
           <button
             v-for="d in drugs"
@@ -88,7 +84,10 @@ function doScan() {
             {{ d.generic }} · {{ d.konsultaCode }}
           </button>
         </div>
-        <button class="btn" type="button" style="margin-top:14px" @click="sign">Sign &amp; mint QR</button>
+        <div class="toolbar" style="margin-top:14px">
+          <button class="btn" type="button" @click="sign">Sign &amp; mint QR</button>
+          <NuxtLink class="btn secondary" :to="`/patients/${rxPatient}`">Open chart</NuxtLink>
+        </div>
       </article>
 
       <article class="card" v-if="lastSigned">
@@ -112,7 +111,7 @@ function doScan() {
       </article>
       <article class="card" v-else>
         <h2>Signed artifact</h2>
-        <p class="muted">A single-use QR is minted after signature. Duplicate scans after full fill are rejected.</p>
+        <p class="muted">A single-use QR is minted after signature. Duplicate scans after full fill are rejected. Void unused scripts from the ledger.</p>
       </article>
     </section>
 
@@ -126,29 +125,38 @@ function doScan() {
         <label class="field">
           <span>Dispensing site</span>
           <select v-model="scanFac">
-            <option v-for="f in facilities.filter(x => x.type !== 'ER')" :key="f.id" :value="f.id">{{ f.name }}</option>
+            <option v-for="f in facilities.filter(x => x.type !== 'ER' && x.type !== 'CHO')" :key="f.id" :value="f.id">{{ f.name }}</option>
           </select>
         </label>
-        <p class="muted">RHU 1 Metformin and Cetirizine are short — a scan there often demonstrates partial fill + voucher.</p>
-        <button class="btn" type="button" @click="doScan">Verify batch &amp; release</button>
+        <button class="btn" type="button" @click="fulfill(scan, scanFac)">Verify batch &amp; release</button>
       </article>
       <article class="card">
         <h2>Live prescription ledger</h2>
         <table>
           <thead>
-            <tr><th>QR</th><th>Patient</th><th>Status</th><th>Fill</th></tr>
+            <tr><th>QR</th><th>Patient</th><th>Status</th><th>Fill</th><th></th></tr>
           </thead>
           <tbody>
             <tr v-for="rx in prescriptions" :key="rx.id">
               <td>
                 <button class="chip" type="button" @click="scan = rx.qr">{{ rx.qr }}</button>
               </td>
-              <td>{{ patientById(rx.patientId)?.name }}</td>
+              <td>
+                <NuxtLink class="row-link" :to="`/patients/${rx.patientId}`">{{ patientById(rx.patientId)?.name }}</NuxtLink>
+              </td>
               <td>{{ rx.status }}<div v-if="rx.voucherTo" class="muted">voucher → {{ facById(rx.voucherTo)?.name }}</div></td>
               <td>
                 <div v-for="item in rx.items" :key="item.drugId" class="muted">
                   {{ drugById(item.drugId)?.generic }} {{ item.dispensed }}/{{ item.qty }}
                 </div>
+              </td>
+              <td>
+                <button
+                  v-if="rx.status !== 'dispensed' && rx.status !== 'voided'"
+                  class="btn secondary"
+                  type="button"
+                  @click="voidRx(rx.id)"
+                >Void</button>
               </td>
             </tr>
           </tbody>

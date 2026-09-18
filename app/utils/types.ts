@@ -1,9 +1,9 @@
 export type EsiLevel = 1 | 2 | 3 | 4 | 5
-export type FacilityType = 'RHU' | 'BHS' | 'ER'
+export type FacilityType = 'RHU' | 'BHS' | 'ER' | 'CHO'
 export type Channel = 'online' | 'walk-in' | 'emergency'
-export type AppointmentStatus = 'reserved' | 'checked-in' | 'in-consult' | 'done' | 'released' | 'rolled'
+export type AppointmentStatus = 'open' | 'reserved' | 'checked-in' | 'in-consult' | 'done' | 'released' | 'rolled' | 'cancelled'
 export type StockTier = 'Critical' | 'Moderate' | 'Optimal'
-export type RxStatus = 'issued' | 'partial' | 'dispensed' | 'transferred'
+export type RxStatus = 'issued' | 'partial' | 'dispensed' | 'transferred' | 'voided'
 
 export interface Facility {
   id: string
@@ -12,6 +12,8 @@ export interface Facility {
   barangay: string
   walkInUsed: number
   walkInCap: number
+  phone: string
+  hours: string
 }
 
 export interface Doctor {
@@ -23,6 +25,7 @@ export interface Doctor {
   dailyCap: number
   todayLoad: number
   prc: string
+  contact: string
 }
 
 export interface Patient {
@@ -32,9 +35,11 @@ export interface Patient {
   sex: 'F' | 'M'
   barangay: string
   philhealth: string
+  contact: string
   allergies: string[]
   conditions: string[]
   meds: string[]
+  notes: string
 }
 
 export interface Appointment {
@@ -49,6 +54,7 @@ export interface Appointment {
   specialty: string
   esi?: EsiLevel
   labs?: string[]
+  note?: string
 }
 
 export interface SymptomHit {
@@ -109,7 +115,7 @@ export interface Requisition {
   id: string
   createdAt: string
   lines: { drug: string; qty: number; reason: string }[]
-  status: 'draft' | 'submitted'
+  status: 'draft' | 'submitted' | 'received'
 }
 
 export interface TransferRec {
@@ -127,4 +133,26 @@ export interface ForecastRow {
   historical: number
   projected: number
   driver: string
+}
+
+export interface Encounter {
+  id: string
+  patientId: string
+  complaint: string
+  esi: EsiLevel
+  specialty: string
+  doctorId?: string
+  facilityId?: string
+  labs: string[]
+  createdAt: string
+  note: string
+  kind: 'triage' | 'consult' | 'emergency' | 'pharmacy'
+}
+
+export interface AuditEvent {
+  id: string
+  at: string
+  actor: string
+  action: string
+  detail: string
 }
