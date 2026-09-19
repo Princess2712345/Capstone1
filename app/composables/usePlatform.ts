@@ -6,7 +6,8 @@ import {
   facilities as seedFacilities,
   forecasts as seedForecasts,
   patients as seedPatients,
-  prescriptions as seedRx
+  prescriptions as seedRx,
+  vouchers as seedVouchers
 } from '~/data/seed'
 import { extractSymptoms, labsFor, scoreEsi } from '~/utils/nlp'
 import type {
@@ -17,6 +18,7 @@ import type {
   Drug,
   Encounter,
   Facility,
+  FillVoucher,
   ForecastRow,
   Patient,
   Prescription,
@@ -25,7 +27,7 @@ import type {
   TriageResult
 } from '~/utils/types'
 
-const STORE_KEY = 'vco-ops-v2'
+const STORE_KEY = 'vco-ops-v4'
 const SERVICE_TIMES = [
   '08:00', '08:15', '08:30', '08:45', '09:00', '09:15', '09:30', '09:45',
   '10:00', '10:15', '10:30', '10:45', '11:00', '11:15', '11:30', '11:45',
@@ -62,6 +64,7 @@ export function usePlatform() {
   const appointments = useState<Appointment[]>('appointments', () => clone(seedAppointments))
   const batches = useState<Batch[]>('batches', () => clone(seedBatches))
   const prescriptions = useState<Prescription[]>('prescriptions', () => clone(seedRx))
+  const vouchers = useState<FillVoucher[]>('vouchers', () => clone(seedVouchers))
   const requisitions = useState<Requisition[]>('requisitions', () => [])
   const transfers = useState<TransferRec[]>('transfers', () => [])
   const drugs = useState<Drug[]>('drugs', () => clone(seedDrugs))
@@ -244,12 +247,108 @@ export function usePlatform() {
   }
 
   function bookNextOpen(patient: Patient, facilityId: string) {
-    const open = appointments.value.find(a => a.facilityId === facilityId && isOpen(a))
+    const open = nextOpenSlot(facilityId)
     if (!open) {
       notify('No open window at that site. Generate the afternoon board or pick another facility.')
       return
     }
     bookOnline(patient, open.id)
+  }
+
+  function nextOpenSlot(facilityId: string) {
+    return appointments.value
+      .filter(a => a.facilityId === facilityId && isOpen(a))
+      .sort((a, b) => a.time.localeCompare(b.time))[0]
+  }
+
+  function digits(value: string) {
+    return value.replace(/\D/g, '')
+  }
+
+  function findPatientForPortal(contact: string, philhealth = '', name = '') {
+    const phone = digits(contact)
+    const ph = philhealth.trim().toLowerCase()
+    const nm = name.trim().toLowerCase()
+    return patients.value.find(p => {
+      if (phone && digits(p.contact) === phone) return true
+      if (ph && p.philhealth.toLowerCase() === ph) return true
+      return false
+    }) ?? (nm && phone ? undefined : patients.value.find(p => nm && p.name.toLowerCase() === nm))
+  }
+
+  function bookFromPortal(input: {
+    name: string
+    age: number
+    sex: 'F' | 'M'
+    barangay: string
+    contact: string
+    philhealth?: string
+    complaint: string
+    facilityId: string
+  }) {
+    const complaint = input.complaint.trim()
+    const hits = extractSymptoms(complaint)
+    const scored = scoreEsi(hits, input.age, complaint)
+    if (scored.bypass) {
+      notify('Chest pain, severe breathing trouble, collapse, or heavy bleeding: go to City Infirmary ER. Do not wait in OPD.')
+      return { ok: false as const, emergency: true, overflow: undefined as string | undefined, appointment: undefined, patient: undefined, reroutedTo: undefined as string | undefined }
+    }
+
+    let patient = findPatientForPortal(input.contact, input.philhealth || '', input.name)
+    if (!patient) {
+      patient = addPatient({
+        name: input.name,
+        age: input.age,
+        sex: input.sex,
+        barangay: input.barangay,
+        contact: input.contact,
+        philhealth: input.philhealth,
+        notes: 'Registered from patient portal'
+      })
+    } else {
+      updatePatient(patient.id, {
+        contact: input.contact || patient.contact,
+        barangay: input.barangay || patient.barangay,
+        philhealth: input.philhealth || patient.philhealth
+      })
+    }
+
+    const preferred = input.facilityId
+    const order = [...new Set([preferred, 'rhu2', 'bhs-mailag', 'rhu1', 'bhs-lumbayao', 'bhs-sancarlos'])]
+    let slot = nextOpenSlot(preferred)
+    let reroutedTo: string | undefined
+    const preferredFac = facById(preferred)
+    const preferredTight = Boolean(preferredFac && preferredFac.walkInCap > 0 && preferredFac.walkInUsed >= preferredFac.walkInCap)
+
+    if (!slot || preferredTight) {
+      for (const id of order) {
+        if (id === preferred && slot && !preferredTight) break
+        const alt = nextOpenSlot(id)
+        const fac = facById(id)
+        const tight = Boolean(fac && fac.walkInCap > 0 && fac.walkInUsed >= fac.walkInCap)
+        if (alt && !tight) {
+          slot = alt
+          if (id !== preferred) reroutedTo = id
+          break
+        }
+      }
+    }
+
+    if (!slot) {
+      const overflow = `${preferredFac?.name ?? 'That site'} has no open window. Try RHU 2 Bagontaas, BHS Mailag, or a prioritized 08:00 slot tomorrow.`
+      notify(overflow)
+      persistNow()
+      return { ok: false as const, emergency: false, overflow, appointment: undefined, patient, reroutedTo: undefined }
+    }
+
+    bookOnline(patient, slot.id)
+    slot.note = complaint
+    if (reroutedTo) {
+      notify(`Your hold is at ${facById(slot.facilityId)?.name} ${slot.time}. Arrive 5–10 minutes early. ${preferredFac?.name} was at cap.`)
+    }
+    log('Patient portal', `${patient.name} booked ${slot.time} at ${slot.facilityId}`)
+    persistNow()
+    return { ok: true as const, emergency: false, overflow: undefined as string | undefined, appointment: slot, patient, reroutedTo }
   }
 
   function registerWalkIn(patient: Patient, facilityId: string, complaint = 'fever and headache') {
@@ -323,6 +422,7 @@ export function usePlatform() {
     a.status = 'open'
     log('Cancel', `${name ?? 'open slot'} ${a.time} released`)
     notify(`${name ?? 'Slot'} cancelled and returned to the board.`)
+    persistNow()
   }
 
   function releaseNoShows() {
@@ -440,10 +540,61 @@ export function usePlatform() {
     return { used, remaining }
   }
 
+  const ADJACENT: Record<string, string[]> = {
+    rhu1: ['rhu2', 'bhs-mailag', 'bhs-sancarlos', 'bhs-lumbayao'],
+    rhu2: ['rhu1', 'bhs-lumbayao', 'bhs-mailag', 'bhs-sancarlos'],
+    'bhs-mailag': ['rhu1', 'rhu2', 'bhs-lumbayao'],
+    'bhs-lumbayao': ['rhu2', 'rhu1', 'bhs-mailag'],
+    'bhs-sancarlos': ['rhu1', 'rhu2', 'bhs-mailag']
+  }
+
+  function pickAdjacentSite(drugId: string, fromId: string, need: number) {
+    const order = [...(ADJACENT[fromId] ?? []), ...facilities.value.map(f => f.id)]
+    const seen = new Set<string>()
+    for (const id of order) {
+      if (!id || id === fromId || seen.has(id)) continue
+      seen.add(id)
+      const fac = facById(id)
+      if (!fac || fac.type === 'ER' || fac.type === 'CHO') continue
+      if (stockOnHand(drugId, id) >= need) return id
+    }
+    for (const id of seen) {
+      if (stockOnHand(drugId, id) > 0) return id
+    }
+    return undefined
+  }
+
+  function mintVoucher(rx: Prescription, item: Prescription['items'][0], fromId: string, remaining: number) {
+    const toId = pickAdjacentSite(item.drugId, fromId, remaining)
+    if (!toId) return null
+    const voucher: FillVoucher = {
+      id: nextId('v'),
+      code: `VCH-VLC-${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
+      prescriptionId: rx.id,
+      patientId: rx.patientId,
+      drugId: item.drugId,
+      remaining,
+      fromFacilityId: fromId,
+      toFacilityId: toId,
+      issuedAt: stamp(),
+      status: 'open'
+    }
+    vouchers.value.unshift(voucher)
+    rx.voucherTo = toId
+    rx.voucherCode = voucher.code
+    rx.status = 'transferred'
+    persistNow()
+    return voucher
+  }
+
   function fulfill(qr: string, facilityId: string) {
     const rx = prescriptions.value.find(r => r.qr.toUpperCase() === qr.toUpperCase())
     if (!rx || rx.status === 'voided') {
       notify('QR not recognized or already voided.')
+      return
+    }
+    if (rx.status === 'dispensed') {
+      notify('Prescription already fully dispensed. Single-use QR is closed.')
       return
     }
     const item = rx.items.find(i => i.dispensed < i.qty)
@@ -455,19 +606,53 @@ export function usePlatform() {
     const pick = fefoPick(item.drugId, facilityId, need)
     item.dispensed += need - pick.remaining
     if (pick.remaining > 0) {
-      const peer = batches.value
-        .filter(b => b.drugId === item.drugId && b.facilityId !== facilityId && b.qty >= pick.remaining)
-        .sort((a, b) => a.expiry.localeCompare(b.expiry))[0]
-      rx.voucherTo = peer?.facilityId
-      rx.status = peer ? 'transferred' : 'partial'
-      notify(peer
-        ? `Partial fill ${item.dispensed}/${item.qty} ${drugById(item.drugId)?.generic}. Transfer voucher to ${facById(peer.facilityId)?.name}.`
-        : `Partial fill only. ${pick.remaining} units still short in the network.`)
+      const voucher = mintVoucher(rx, item, facilityId, pick.remaining)
+      notify(voucher
+        ? `Partial fill ${item.dispensed}/${item.qty} ${drugById(item.drugId)?.generic}. Voucher ${voucher.code} for the remaining ${voucher.remaining} at ${facById(voucher.toFacilityId)?.name}.`
+        : `Partial fill ${item.dispensed}/${item.qty}. Remaining ${pick.remaining} has no peer stock in the Valencia network.`)
+      if (!voucher) rx.status = 'partial'
     } else {
       rx.status = rx.items.every(i => i.dispensed >= i.qty) ? 'dispensed' : 'partial'
       notify(`FEFO release from lot ${pick.used[0]?.batch.lot}. QR ${rx.qr} ${rx.status}.`)
     }
     log('Dispense', `${rx.qr} at ${facById(facilityId)?.name}`)
+    persistNow()
+  }
+
+  function redeemVoucher(code: string, facilityId: string) {
+    const voucher = vouchers.value.find(v => v.code.toUpperCase() === code.trim().toUpperCase())
+    if (!voucher || voucher.status !== 'open') {
+      notify('Voucher not recognized or already redeemed.')
+      return
+    }
+    if (voucher.toFacilityId !== facilityId) {
+      notify(`This voucher is redeemable at ${facById(voucher.toFacilityId)?.name}, not ${facById(facilityId)?.name}.`)
+      return
+    }
+    const rx = prescriptions.value.find(r => r.id === voucher.prescriptionId)
+    const item = rx?.items.find(i => i.drugId === voucher.drugId)
+    if (!rx || !item) {
+      notify('Linked prescription is missing.')
+      return
+    }
+    const pick = fefoPick(voucher.drugId, facilityId, voucher.remaining)
+    const given = voucher.remaining - pick.remaining
+    item.dispensed += given
+    if (pick.remaining > 0) {
+      voucher.remaining = pick.remaining
+      notify(`Voucher partial at ${facById(facilityId)?.name}: released ${given}, still short ${pick.remaining}.`)
+    } else {
+      voucher.status = 'redeemed'
+      voucher.remaining = 0
+      rx.status = rx.items.every(i => i.dispensed >= i.qty) ? 'dispensed' : 'partial'
+      if (rx.status === 'dispensed') {
+        rx.voucherCode = voucher.code
+      }
+      notify(`Voucher ${voucher.code} redeemed. Released ${given} ${drugById(voucher.drugId)?.generic} at ${facById(facilityId)?.name}.`)
+    }
+    log('Voucher', `${voucher.code} at ${facilityId}`)
+    persistNow()
+    return voucher
   }
 
   function stockOnHand(drugId: string, facilityId?: string) {
@@ -691,6 +876,7 @@ export function usePlatform() {
       appointments: appointments.value,
       batches: batches.value,
       prescriptions: prescriptions.value,
+      vouchers: vouchers.value,
       requisitions: requisitions.value,
       transfers: transfers.value,
       drugs: drugs.value,
@@ -701,20 +887,25 @@ export function usePlatform() {
     }
   }
 
-  function applySnapshot(data: ReturnType<typeof snapshot>) {
-    facilities.value = data.facilities
-    doctors.value = data.doctors
-    patients.value = data.patients
-    appointments.value = data.appointments
-    batches.value = data.batches
-    prescriptions.value = data.prescriptions
-    requisitions.value = data.requisitions
-    transfers.value = data.transfers
-    drugs.value = data.drugs
-    forecasts.value = data.forecasts
-    encounters.value = data.encounters
-    audits.value = data.audits
-    clock.value = data.clock
+  function applySnapshot(data: Partial<ReturnType<typeof snapshot>>) {
+    if (data.facilities?.length) facilities.value = data.facilities
+    if (data.doctors?.length) doctors.value = data.doctors
+    if (data.patients?.length) patients.value = data.patients
+    if (data.appointments?.length) appointments.value = data.appointments
+    if (data.batches?.length) batches.value = data.batches
+    if (data.prescriptions?.length) prescriptions.value = data.prescriptions
+    if (data.vouchers) vouchers.value = data.vouchers
+    if (data.requisitions) requisitions.value = data.requisitions
+    if (data.transfers) transfers.value = data.transfers
+    if (data.drugs?.length) drugs.value = data.drugs
+    if (data.forecasts?.length) forecasts.value = data.forecasts
+    if (data.encounters) encounters.value = data.encounters
+    if (data.audits) audits.value = data.audits
+    if (data.clock) clock.value = data.clock
+  }
+
+  function persistNow() {
+    if (import.meta.client) localStorage.setItem(STORE_KEY, JSON.stringify(snapshot()))
   }
 
   function hydrate() {
@@ -729,7 +920,7 @@ export function usePlatform() {
       /* keep seed */
     }
     watch(
-      [facilities, doctors, patients, appointments, batches, prescriptions, requisitions, transfers, drugs, forecasts, encounters, audits, clock],
+      [facilities, doctors, patients, appointments, batches, prescriptions, vouchers, requisitions, transfers, drugs, forecasts, encounters, audits, clock],
       () => {
         localStorage.setItem(STORE_KEY, JSON.stringify(snapshot()))
       },
@@ -745,6 +936,7 @@ export function usePlatform() {
       appointments: clone(seedAppointments),
       batches: clone(seedBatches),
       prescriptions: clone(seedRx),
+      vouchers: clone(seedVouchers),
       requisitions: [],
       transfers: [],
       drugs: clone(seedDrugs),
@@ -766,6 +958,7 @@ export function usePlatform() {
     appointments,
     batches,
     prescriptions,
+    vouchers,
     requisitions,
     transfers,
     forecasts,
@@ -789,6 +982,8 @@ export function usePlatform() {
     commitTriageToSchedule,
     bookOnline,
     bookNextOpen,
+    bookFromPortal,
+    findPatientForPortal,
     registerWalkIn,
     checkIn,
     startConsult,
@@ -799,6 +994,7 @@ export function usePlatform() {
     createRx,
     voidRx,
     fulfill,
+    redeemVoucher,
     stockOnHand,
     tier,
     recommendTransfers,

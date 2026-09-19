@@ -4,6 +4,7 @@ export type Channel = 'online' | 'walk-in' | 'emergency'
 export type AppointmentStatus = 'open' | 'reserved' | 'checked-in' | 'in-consult' | 'done' | 'released' | 'rolled' | 'cancelled'
 export type StockTier = 'Critical' | 'Moderate' | 'Optimal'
 export type RxStatus = 'issued' | 'partial' | 'dispensed' | 'transferred' | 'voided'
+export type VoucherStatus = 'open' | 'redeemed'
 
 export interface Facility {
   id: string
@@ -109,6 +110,20 @@ export interface Prescription {
   alerts: string[]
   issuedAt: string
   voucherTo?: string
+  voucherCode?: string
+}
+
+export interface FillVoucher {
+  id: string
+  code: string
+  prescriptionId: string
+  patientId: string
+  drugId: string
+  remaining: number
+  fromFacilityId: string
+  toFacilityId: string
+  issuedAt: string
+  status: VoucherStatus
 }
 
 export interface Requisition {

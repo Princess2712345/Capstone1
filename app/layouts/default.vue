@@ -31,7 +31,7 @@ async function goSearch() {
         <div class="nav-group-label">Clinical</div>
         <NuxtLink class="nav-link" to="/patients">Patient registry</NuxtLink>
         <NuxtLink class="nav-link" to="/clinicians">Clinician roster</NuxtLink>
-        <NuxtLink class="nav-link" to="/pharmacy">e-Prescription</NuxtLink>
+        <NuxtLink class="nav-link" to="/pharmacy">e-Rx &amp; vouchers</NuxtLink>
         <div class="nav-group-label">Network</div>
         <NuxtLink class="nav-link" to="/facilities">Facilities</NuxtLink>
         <NuxtLink class="nav-link" to="/supply">FEFO &amp; procurement</NuxtLink>

@@ -1,4 +1,4 @@
-import type { Appointment, Batch, Doctor, Drug, Facility, ForecastRow, Patient, Prescription } from '~/utils/types'
+import type { Appointment, Batch, Doctor, Drug, Facility, FillVoucher, ForecastRow, Patient, Prescription } from '~/utils/types'
 
 export const facilities: Facility[] = [
   { id: 'cho', name: 'City Health Office', type: 'CHO', barangay: 'Poblacion', walkInUsed: 0, walkInCap: 0, phone: '(088) 828-2411', hours: '08:00–17:00' },
@@ -125,11 +125,27 @@ export const prescriptions: Prescription[] = [
     patientId: 'p4',
     doctorId: 'd-pulmo',
     facilityId: 'rhu1',
-    items: [{ drugId: 'salbutamol', qty: 20, sig: '1 tab TID as needed', dispensed: 10 }],
+    items: [{ drugId: 'salbutamol', qty: 30, sig: '1 tab TID as needed', dispensed: 10 }],
     status: 'partial',
     alerts: [],
     issuedAt: '2026-09-18 08:05',
-    voucherTo: 'rhu2'
+    voucherTo: 'rhu2',
+    voucherCode: 'VCH-VLC-10OF30'
+  }
+]
+
+export const vouchers: FillVoucher[] = [
+  {
+    id: 'v1',
+    code: 'VCH-VLC-10OF30',
+    prescriptionId: 'rx2',
+    patientId: 'p4',
+    drugId: 'salbutamol',
+    remaining: 20,
+    fromFacilityId: 'rhu1',
+    toFacilityId: 'rhu2',
+    issuedAt: '2026-09-18 08:06',
+    status: 'open' as const
   }
 ]
 

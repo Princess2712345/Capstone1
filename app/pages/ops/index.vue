@@ -53,7 +53,7 @@ const tele = computed(() => doctors.value.filter(d => d.role === 'telehealth' ||
       <article class="card">
         <div class="stat-value">{{ rxOpen }}</div>
         <div class="stat-label">Open e-prescriptions</div>
-        <p class="stat-note">Single-use QR. Partial fills mint transfer vouchers between facilities.</p>
+        <p class="stat-note">Partial fill (e.g. 10 of 30 tablets) mints a voucher redeemable at an adjacent RHU or BHS.</p>
       </article>
       <article class="card">
         <div class="stat-value">{{ criticalBatches.length }}</div>

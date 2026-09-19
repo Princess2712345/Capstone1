@@ -7,11 +7,13 @@ const {
   drugs,
   createRx,
   fulfill,
+  redeemVoucher,
   voidRx,
   patientById,
   docById,
   facById,
-  drugById
+  drugById,
+  vouchers
 } = usePlatform()
 
 const rxPatient = ref(patients.value[0]?.id ?? '')
@@ -21,6 +23,8 @@ const qty = ref(30)
 const sig = ref('1 tab as directed after meals')
 const scan = ref('RX-VLC-7K2M')
 const scanFac = ref('rhu1')
+const voucherCode = ref('VCH-VLC-10OF30')
+const voucherFac = ref('rhu2')
 const lastSigned = ref<(typeof prescriptions.value)[0] | null>(null)
 
 function toggleDrug(id: string) {
@@ -43,7 +47,7 @@ function sign() {
         <div class="brand-kicker" style="color: var(--gold)">Module 3 · Clinical e-Rx</div>
         <h1>Konsulta prescribing &amp; QR dispensing</h1>
         <p class="lede">
-          Generic names and benefit codes, allergy and interaction checks, physician PRC signature, FEFO fulfillment, void, and BHS vouchers.
+          If this window can only release part of a Konsulta script — for example 10 of 30 tablets — FEFO posts that fill and mints a single-use transfer voucher for the balance at an adjacent RHU or BHS.
         </p>
       </div>
     </header>
@@ -128,10 +132,47 @@ function sign() {
             <option v-for="f in facilities.filter(x => x.type !== 'ER' && x.type !== 'CHO')" :key="f.id" :value="f.id">{{ f.name }}</option>
           </select>
         </label>
+        <p class="muted">RHU 1 Metformin on-hand is short of a 30-tablet fill — scan RX-VLC-7K2M here to mint a voucher for the balance.</p>
         <button class="btn" type="button" @click="fulfill(scan, scanFac)">Verify batch &amp; release</button>
       </article>
       <article class="card">
-        <h2>Live prescription ledger</h2>
+        <h2>Redeem transfer voucher</h2>
+        <p class="muted">Patient brings the remaining quantity to the named adjacent site. Demo: Tomas Lumbo still needs 20 of 30 Salbutamol at RHU 2 — code VCH-VLC-10OF30.</p>
+        <label class="field">
+          <span>Voucher code</span>
+          <input v-model="voucherCode">
+        </label>
+        <label class="field">
+          <span>Redeeming site</span>
+          <select v-model="voucherFac">
+            <option v-for="f in facilities.filter(x => x.type !== 'ER' && x.type !== 'CHO')" :key="f.id" :value="f.id">{{ f.name }}</option>
+          </select>
+        </label>
+        <button class="btn gold" type="button" @click="redeemVoucher(voucherCode, voucherFac)">Release remaining tablets</button>
+      </article>
+    </section>
+
+    <article class="card" style="margin-top:16px">
+      <h2>Open transfer vouchers</h2>
+      <p v-if="!vouchers.length" class="empty">No vouchers minted yet.</p>
+      <table v-else>
+        <thead>
+          <tr><th>Code</th><th>Patient</th><th>Balance</th><th>From → to</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          <tr v-for="v in vouchers" :key="v.id">
+            <td><button class="chip" type="button" @click="voucherCode = v.code; voucherFac = v.toFacilityId">{{ v.code }}</button></td>
+            <td>{{ patientById(v.patientId)?.name }}</td>
+            <td>{{ v.remaining }} {{ drugById(v.drugId)?.generic }}</td>
+            <td>{{ facById(v.fromFacilityId)?.name }} → {{ facById(v.toFacilityId)?.name }}</td>
+            <td>{{ v.status }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </article>
+
+    <article class="card" style="margin-top:16px">
+      <h2>Live prescription ledger</h2>
         <table>
           <thead>
             <tr><th>QR</th><th>Patient</th><th>Status</th><th>Fill</th><th></th></tr>
@@ -144,7 +185,7 @@ function sign() {
               <td>
                 <NuxtLink class="row-link" :to="`/patients/${rx.patientId}`">{{ patientById(rx.patientId)?.name }}</NuxtLink>
               </td>
-              <td>{{ rx.status }}<div v-if="rx.voucherTo" class="muted">voucher → {{ facById(rx.voucherTo)?.name }}</div></td>
+              <td>{{ rx.status }}<div v-if="rx.voucherCode" class="muted">{{ rx.voucherCode }} → {{ facById(rx.voucherTo)?.name }}</div></td>
               <td>
                 <div v-for="item in rx.items" :key="item.drugId" class="muted">
                   {{ drugById(item.drugId)?.generic }} {{ item.dispensed }}/{{ item.qty }}
@@ -161,7 +202,6 @@ function sign() {
             </tr>
           </tbody>
         </table>
-      </article>
-    </section>
+    </article>
   </div>
 </template>

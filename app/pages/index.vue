@@ -13,8 +13,8 @@ definePageMeta({ layout: 'public' })
           facilities, reports, and directory access — one file for RHUs and Barangay Health Stations.
         </p>
         <div style="display:flex; gap:10px; margin-top:22px; flex-wrap:wrap">
-          <NuxtLink class="btn" to="/signup">Create staff account</NuxtLink>
-          <NuxtLink class="btn secondary" to="/login">Log in to the command floor</NuxtLink>
+          <NuxtLink class="btn" to="/portal">Patient desk</NuxtLink>
+          <NuxtLink class="btn secondary" to="/login">Staff command floor</NuxtLink>
         </div>
       </div>
       <aside class="hero-panel">
