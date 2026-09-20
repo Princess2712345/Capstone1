@@ -11,11 +11,9 @@
           </span>
         </NuxtLink>
         <nav class="lp-links" aria-label="Landing">
-          <NuxtLink to="/portal">Patients</NuxtLink>
-          <a href="/#services">Services</a>
-          <a href="/#network">Network</a>
+          <NuxtLink to="/portal">Patient portal</NuxtLink>
           <NuxtLink to="/login">Staff</NuxtLink>
-          <NuxtLink class="btn" to="/portal/book">Book a visit</NuxtLink>
+          <NuxtLink class="btn" to="/portal/book">Book appointment</NuxtLink>
         </nav>
       </div>
     </header>

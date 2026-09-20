@@ -1,8 +1,12 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'portal' })
 
-const { facilities, appointments, bookFromPortal, facById, docById, clock } = usePlatform()
-const { remember } = usePatientPortal()
+import { catchmentOf } from '~/data/catchment'
+
+const { identity } = usePatientPortal()
+const { facilities, appointments, bookFromPortal, facById, docById, clock, patients } = usePlatform()
+
+const me = computed(() => patients.value.find(p => p.id === identity.value?.patientId) ?? null)
 
 const form = reactive({
   name: '',
@@ -13,6 +17,21 @@ const form = reactive({
   philhealth: '',
   complaint: '',
   facilityId: 'rhu1'
+})
+
+watch(me, (p) => {
+  if (!p) return
+  form.name = p.name
+  form.age = p.age
+  form.sex = p.sex
+  form.barangay = p.barangay
+  form.contact = p.contact
+  form.philhealth = p.philhealth
+  form.facilityId = p.homeFacilityId || 'rhu1'
+}, { immediate: true })
+
+watch(() => form.barangay, (b) => {
+  form.facilityId = catchmentOf(b).homeFacilityId
 })
 
 const error = ref('')
@@ -38,11 +57,9 @@ function submit() {
   }
   if (!result.ok) {
     overflow.value = result.overflow || 'No open window. Try RHU 2, BHS Mailag, or tomorrow 08:00.'
-    if (result.patient) remember(result.patient.id, result.patient.name, result.patient.contact)
     return
   }
-  if (result.patient && result.appointment) {
-    remember(result.patient.id, result.patient.name, result.patient.contact)
+  if (result.appointment) {
     bookedId.value = result.appointment.id
   }
 }
@@ -75,7 +92,7 @@ function submit() {
               <option value="M">Male</option>
             </select>
           </label>
-          <label class="field"><span>Barangay</span><input v-model="form.barangay"></label>
+          <BarangayField v-model="form.barangay" />
           <label class="field"><span>PhilHealth (optional)</span><input v-model="form.philhealth"></label>
           <label class="field field-span">
             <span>Preferred site</span>

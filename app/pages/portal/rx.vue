@@ -1,19 +1,13 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'portal' })
 
-const { prescriptions, patients, drugById, docById, facById, findPatientForPortal, vouchers } = usePlatform()
-const { identity, remember } = usePatientPortal()
-
-const qr = ref('RX-VLC-7K2M')
-const lookup = reactive({ contact: '', philhealth: '' })
-const notice = ref('')
+const { prescriptions, patients, drugById, docById, facById, vouchers } = usePlatform()
+const { identity } = usePatientPortal()
 
 const patient = computed(() => {
-  const id = identity.value
+  const id = identity.value?.patientId
   if (!id) return null
-  return patients.value.find(p => p.id === id.patientId)
-    || findPatientForPortal(id.contact, '', id.name)
-    || null
+  return patients.value.find(p => p.id === id) ?? null
 })
 
 const mine = computed(() => {
@@ -22,9 +16,14 @@ const mine = computed(() => {
   return prescriptions.value.filter(r => r.patientId === id && r.status !== 'voided')
 })
 
+const qr = ref('')
+watch(mine, (rows) => {
+  if (!qr.value && rows[0]) qr.value = rows[0].qr
+}, { immediate: true })
+
 const shown = computed(() => {
   const code = qr.value.trim().toUpperCase()
-  if (!code) return null
+  if (!code) return mine.value[0] ?? null
   return prescriptions.value.find(r => r.qr.toUpperCase() === code && r.status !== 'voided') ?? null
 })
 
@@ -32,16 +31,6 @@ const shownVouchers = computed(() => {
   if (!shown.value) return []
   return vouchers.value.filter(v => v.prescriptionId === shown.value?.id)
 })
-
-function findRecord() {
-  notice.value = ''
-  const found = findPatientForPortal(lookup.contact, lookup.philhealth, '')
-  if (!found) {
-    notice.value = 'No patient file matches that mobile or PhilHealth number.'
-    return
-  }
-  remember(found.id, found.name, found.contact)
-}
 </script>
 
 <template>
@@ -55,18 +44,11 @@ function findRecord() {
     <section class="desk-hero">
       <article class="desk-panel">
         <h2>Open a script</h2>
-        <p v-if="patient" class="muted" style="margin-top:0">{{ patient.name }}</p>
-        <div v-else class="form-grid form-grid-2">
-          <label class="field"><span>Mobile</span><input v-model="lookup.contact"></label>
-          <label class="field"><span>PhilHealth</span><input v-model="lookup.philhealth"></label>
-        </div>
-        <button v-if="!patient" class="btn" type="button" style="margin-top:16px" @click="findRecord">Find my e-Rx</button>
-        <p v-if="notice" class="field-error">{{ notice }}</p>
+        <p class="muted" style="margin-top:0">{{ patient?.name }}</p>
         <label class="field" style="margin-top:16px">
           <span>QR code</span>
           <input v-model="qr" placeholder="RX-VLC-7K2M">
         </label>
-        <p class="muted">Demo: Rosa’s code RX-VLC-7K2M</p>
       </article>
       <article class="desk-panel" v-if="shown">
         <h2>{{ shown.qr }}</h2>

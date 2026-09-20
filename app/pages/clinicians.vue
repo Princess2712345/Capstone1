@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import type { Doctor } from '~/utils/types'
+import { matchesLoad, sortByLoad, type LoadFilter } from '~/utils/load'
 
 const { doctors, facilities, addDoctor, updateDoctor } = usePlatform()
+const loadFilter = ref<LoadFilter>('all')
+const shown = computed(() => sortByLoad(doctors.value).filter(d => matchesLoad(d, loadFilter.value)))
 
 const form = reactive({
   name: '',
@@ -66,8 +69,12 @@ function save() {
         <button class="btn" type="button" style="margin-top:12px" @click="save">Add to matrix</button>
       </article>
       <article class="card">
-        <h2>Load vs cap</h2>
-        <div v-for="d in doctors" :key="d.id" style="margin-bottom:10px">
+        <div class="load-head">
+          <h2>Load vs cap</h2>
+          <PhysicianLoadFilter v-model:load="loadFilter" />
+        </div>
+        <p v-if="!shown.length" class="empty">No clinicians in this load band.</p>
+        <div v-for="d in shown" :key="d.id" style="margin-bottom:10px">
           <div style="display:flex; justify-content:space-between; font-size:13px">
             <strong>{{ d.name }}</strong>
             <span class="muted">{{ d.todayLoad }}/{{ d.dailyCap }}</span>
@@ -81,13 +88,14 @@ function save() {
 
     <article class="card" style="margin-top:16px">
       <h2>City-wide matrix</h2>
+      <p class="muted">{{ shown.length }} shown · same load filter as the meters</p>
       <div class="table-wrap">
         <table>
           <thead>
             <tr><th>Clinician</th><th>Specialty</th><th>Role</th><th>Site</th><th>Cap</th><th>PRC</th></tr>
           </thead>
           <tbody>
-            <tr v-for="d in doctors" :key="d.id">
+            <tr v-for="d in shown" :key="d.id">
               <td>{{ d.name }}<div class="muted">{{ d.contact }}</div></td>
               <td>{{ d.specialty }}</td>
               <td>{{ d.role }}</td>

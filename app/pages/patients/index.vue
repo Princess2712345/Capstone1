@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { stationName } from '~/data/catchment'
+
 const {
   patients,
   csv,
@@ -25,7 +27,7 @@ const adding = ref(false)
 const rows = computed(() => {
   const q = filter.value.toLowerCase()
   return patients.value.filter(p =>
-    !q || [p.name, p.barangay, p.philhealth, p.contact].join(' ').toLowerCase().includes(q)
+    !q || [p.name, p.barangay, p.residentId, p.philhealth, p.contact, stationName(p.homeFacilityId)].join(' ').toLowerCase().includes(q)
   )
 })
 
@@ -64,7 +66,7 @@ function save() {
       <div>
         <div class="brand-kicker">Clinical registry</div>
         <h1>Patient registry</h1>
-        <p class="lede">{{ patients.length }} records in the city file. Open a name to see the chart.</p>
+        <p class="lede">{{ patients.length }} records. Each resident has a CHO ID and a home barangay / BHU.</p>
       </div>
       <div class="toolbar">
         <button class="btn" type="button" @click="adding = !adding">{{ adding ? 'Close form' : 'Add patient' }}</button>
@@ -85,7 +87,7 @@ function save() {
             <option value="M">Male</option>
           </select>
         </label>
-        <label class="field"><span>Barangay</span><input v-model="form.barangay"></label>
+        <BarangayField v-model="form.barangay" />
         <label class="field"><span>Allergies</span><input v-model="form.allergies"></label>
         <label class="field"><span>Conditions</span><input v-model="form.conditions"></label>
         <label class="field"><span>Current medicines</span><input v-model="form.meds"></label>
@@ -100,7 +102,7 @@ function save() {
         <h2>Catchment</h2>
         <label class="field registry-search">
           <span>Find</span>
-          <input v-model="filter" placeholder="Name, barangay, PhilHealth, mobile">
+          <input v-model="filter" placeholder="Name, VLC-MLG, Mailag, BHS, PhilHealth">
         </label>
       </div>
       <p class="muted" style="margin:0 0 12px">{{ rows.length }} shown</p>
@@ -108,9 +110,11 @@ function save() {
         <table class="registry-table">
           <thead>
             <tr>
+              <th>Resident ID</th>
               <th>Name</th>
               <th>Age</th>
               <th>Barangay</th>
+              <th>Home BHU</th>
               <th>PhilHealth</th>
               <th>Flags</th>
               <th></th>
@@ -118,12 +122,14 @@ function save() {
           </thead>
           <tbody>
             <tr v-for="p in rows" :key="p.id">
+              <td class="resident-id">{{ p.residentId }}</td>
               <td>
                 <NuxtLink class="row-link" :to="`/patients/${p.id}`">{{ p.name }}</NuxtLink>
                 <div class="muted">{{ p.contact || 'No mobile' }}</div>
               </td>
               <td>{{ p.age }} {{ p.sex === 'F' ? 'F' : 'M' }}</td>
               <td>{{ p.barangay }}</td>
+              <td>{{ stationName(p.homeFacilityId) }}</td>
               <td>{{ p.philhealth || '—' }}</td>
               <td class="muted">{{ [...p.allergies, ...p.conditions].slice(0, 3).join(' · ') || '—' }}</td>
               <td><NuxtLink class="btn secondary" :to="`/patients/${p.id}`">Open</NuxtLink></td>

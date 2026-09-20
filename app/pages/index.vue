@@ -41,7 +41,7 @@ const sites = [
             The City Health Office coordinates rural health units and barangay stations for triage, appointments, and medicine.
           </p>
           <div class="lp-actions">
-            <NuxtLink class="btn" to="/portal/book">Book a visit</NuxtLink>
+            <NuxtLink class="btn" to="/portal">Patient portal</NuxtLink>
             <NuxtLink class="btn secondary" to="/login">Staff access</NuxtLink>
           </div>
         </div>

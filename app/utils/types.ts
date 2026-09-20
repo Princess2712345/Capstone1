@@ -35,6 +35,8 @@ export interface Patient {
   age: number
   sex: 'F' | 'M'
   barangay: string
+  residentId: string
+  homeFacilityId: string
   philhealth: string
   contact: string
   allergies: string[]

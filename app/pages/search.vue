@@ -39,7 +39,7 @@ async function go() {
         <p v-if="!results.patients.length" class="empty">No patient matches.</p>
         <p v-for="p in results.patients" :key="p.id">
           <NuxtLink class="row-link" :to="`/patients/${p.id}`">{{ p.name }}</NuxtLink>
-          <span class="muted"> · {{ p.barangay }} · {{ p.philhealth }}</span>
+          <span class="muted"> · {{ p.residentId }} · {{ p.barangay }} · {{ p.philhealth }}</span>
         </p>
       </article>
       <article class="card">

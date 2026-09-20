@@ -30,6 +30,7 @@ async function submit() {
     <p class="muted" style="margin-top:14px">
       Demo: <code>cho@valencia.gov.ph</code> / <code>careops</code>
     </p>
-    <p class="muted">No account yet? <NuxtLink to="/signup" style="color:var(--leaf)">Sign up</NuxtLink></p>
+    <p class="muted">No staff account yet? <NuxtLink to="/signup" style="color:var(--leaf)">Sign up</NuxtLink></p>
+    <p class="muted">Resident? <NuxtLink to="/portal/login" style="color:var(--leaf)">Patient portal</NuxtLink></p>
   </form>
 </template>

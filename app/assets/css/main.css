@@ -546,6 +546,62 @@ tbody tr:hover td {
   background: #fff;
 }
 
+.chip.on,
+.chip[aria-pressed="true"] {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: #fff;
+}
+
+.filter-pop {
+  position: relative;
+  display: inline-block;
+}
+
+.filter-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 8;
+  min-width: 200px;
+  background: #fff;
+  border: 1px solid var(--line);
+  box-shadow: 0 8px 24px rgba(18, 36, 72, 0.12);
+  padding: 8px;
+}
+
+.filter-panel-kicker {
+  margin: 8px 8px 4px;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #8a7430;
+  font-weight: 700;
+}
+
+.filter-panel-kicker:first-child { margin-top: 2px; }
+
+.filter-option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  padding: 8px 10px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.filter-option:hover,
+.filter-option.on {
+  background: var(--paper);
+}
+
+.filter-option.on {
+  color: var(--navy);
+  font-weight: 700;
+}
+
 .slot {
   display: grid;
   grid-template-columns: 72px 1fr auto;
@@ -959,6 +1015,40 @@ tbody tr:hover td {
   color: #122448;
 }
 
+.portal-shell {
+  min-height: 100vh;
+  background: #f3f1ea;
+  color: #122448;
+}
+
+.portal-nav {
+  background: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 8;
+  border-bottom: 1px solid #d9d4c6;
+}
+
+.portal-nav::before {
+  content: "Patient portal · residents only";
+  display: block;
+  background: #122448;
+  color: #d4c48a;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-align: center;
+  padding: 6px 12px;
+  font-weight: 700;
+}
+
+.portal-nav::after {
+  content: "";
+  display: block;
+  height: 3px;
+  background: linear-gradient(90deg, #c4a035, #1e3a8a 55%, #c4a035);
+}
+
 .lp-wrap {
   width: min(1080px, calc(100% - 48px));
   margin: 0 auto;
@@ -1146,11 +1236,8 @@ tbody tr:hover td {
   line-height: 1.5;
 }
 
-.desk-panel {
-  background: #fff;
-  border: 1px solid #e4dfd2;
-  padding: 28px;
-  text-align: left;
+.desk-auth {
+  width: min(480px, 100%);
 }
 
 @media (max-width: 900px) {
@@ -1399,6 +1486,16 @@ tbody tr:hover td {
 
 .registry-bar h2 { margin: 0; }
 
+.load-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.load-head h2 { margin: 0; }
+
 .registry-search {
   min-width: min(320px, 100%);
 }
@@ -1435,6 +1532,12 @@ tbody tr:hover td {
 .id-strip dd {
   margin: 0;
   font-size: 15px;
+}
+
+.resident-id {
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  letter-spacing: 0.04em;
+  font-size: 14px;
 }
 
 @media (max-width: 900px) {

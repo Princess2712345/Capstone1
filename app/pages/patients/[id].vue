@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { homeStationOf, stationName } from '~/data/catchment'
+
 const route = useRoute()
 const {
   patientById,
@@ -27,6 +29,13 @@ const edit = reactive({
   barangay: ''
 })
 
+const visits = computed(() => appointments.value.filter(a => a.patientId === id.value).sort((a, b) => a.time.localeCompare(b.time)))
+const rx = computed(() => prescriptions.value.filter(r => r.patientId === id.value))
+const history = computed(() => encounters.value.filter(e => e.patientId === id.value))
+const bookFac = ref('rhu1')
+const home = computed(() => homeStationOf(patient.value?.barangay || 'Poblacion'))
+const sites = computed(() => facilities.value.filter(x => x.type !== 'CHO'))
+
 watch(patient, (p) => {
   if (!p) return
   edit.contact = p.contact
@@ -36,13 +45,8 @@ watch(patient, (p) => {
   edit.meds = p.meds.join(', ')
   edit.notes = p.notes
   edit.barangay = p.barangay
+  if (p.homeFacilityId) bookFac.value = p.homeFacilityId
 }, { immediate: true })
-
-const visits = computed(() => appointments.value.filter(a => a.patientId === id.value).sort((a, b) => a.time.localeCompare(b.time)))
-const rx = computed(() => prescriptions.value.filter(r => r.patientId === id.value))
-const history = computed(() => encounters.value.filter(e => e.patientId === id.value))
-const bookFac = ref('rhu1')
-const sites = computed(() => facilities.value.filter(x => x.type !== 'CHO'))
 
 function save() {
   if (!patient.value) return
@@ -68,6 +72,7 @@ function book() {
       <div>
         <div class="brand-kicker">Patient chart</div>
         <h1>{{ patient.name }}</h1>
+        <p class="lede">{{ patient.residentId }} · {{ patient.barangay }} · {{ stationName(patient.homeFacilityId) }}</p>
       </div>
       <div class="toolbar">
         <NuxtLink class="btn secondary" to="/patients">Registry</NuxtLink>
@@ -78,20 +83,20 @@ function book() {
 
     <dl class="id-strip">
       <div>
-        <dt>Age / sex</dt>
-        <dd>{{ patient.age }} {{ patient.sex === 'F' ? 'Female' : 'Male' }}</dd>
+        <dt>Resident ID</dt>
+        <dd class="resident-id">{{ patient.residentId }}</dd>
       </div>
       <div>
         <dt>Barangay</dt>
         <dd>{{ patient.barangay }}</dd>
       </div>
       <div>
-        <dt>PhilHealth</dt>
-        <dd>{{ patient.philhealth || '—' }}</dd>
+        <dt>Home BHU</dt>
+        <dd>{{ home.station }}</dd>
       </div>
       <div>
-        <dt>Mobile</dt>
-        <dd>{{ patient.contact || '—' }}</dd>
+        <dt>Age / sex</dt>
+        <dd>{{ patient.age }} {{ patient.sex === 'F' ? 'Female' : 'Male' }}</dd>
       </div>
     </dl>
 
@@ -99,7 +104,7 @@ function book() {
       <article class="card">
         <h2>Chart</h2>
         <div class="form-grid form-grid-2">
-          <label class="field"><span>Barangay</span><input v-model="edit.barangay"></label>
+          <BarangayField v-model="edit.barangay" />
           <label class="field"><span>Contact</span><input v-model="edit.contact"></label>
           <label class="field"><span>PhilHealth</span><input v-model="edit.philhealth"></label>
           <label class="field"><span>Allergies</span><input v-model="edit.allergies"></label>

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { catchmentOf } from '~/data/catchment'
+
 const {
   appointments,
   patients,
@@ -27,7 +29,10 @@ const walkName = ref('')
 const walkAge = ref(41)
 const walkSex = ref<'F' | 'M'>('F')
 const walkBarangay = ref('Mailag')
-const walkFac = ref('rhu1')
+const walkFac = ref(catchmentOf('Mailag').homeFacilityId)
+watch(walkBarangay, (b) => {
+  walkFac.value = catchmentOf(b).homeFacilityId
+})
 const walkComplaint = ref('hilanat and sakit sa ulo since this morning')
 const noteId = ref('')
 const note = ref('')
@@ -83,7 +88,7 @@ function finish(id: string) {
         <div class="field">
           <span>Patient</span>
           <select v-model="bookPatient">
-            <option v-for="p in patients" :key="p.id" :value="p.id">{{ p.name }}</option>
+            <option v-for="p in patients" :key="p.id" :value="p.id">{{ p.residentId }} · {{ p.name }} · {{ p.barangay }}</option>
           </select>
         </div>
         <p class="muted">Reserves the next open window at the site selected on the board.</p>
@@ -99,7 +104,7 @@ function finish(id: string) {
             <select v-model="walkSex"><option value="F">F</option><option value="M">M</option></select>
           </label>
         </div>
-        <label class="field" style="margin-top:8px"><span>Barangay</span><input v-model="walkBarangay"></label>
+        <BarangayField v-model="walkBarangay" />
         <label class="field" style="margin-top:8px"><span>Chief complaint</span><input v-model="walkComplaint"></label>
         <label class="field" style="margin-top:8px">
           <span>Intake site</span>

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { matchesLoad, sortByLoad, type LoadFilter } from '~/utils/load'
+
 const {
   patients,
   facilities,
@@ -8,6 +10,9 @@ const {
   commitTriageToSchedule,
   emergencyInsert
 } = usePlatform()
+
+const loadFilter = ref<LoadFilter>('all')
+const matrix = computed(() => sortByLoad(doctors.value).filter(d => matchesLoad(d, loadFilter.value)))
 
 const patientId = ref(patients.value[0]?.id ?? '')
 const complaint = ref('Sakit sa dughan since last night, lisod pagginhawa, sweating.')
@@ -57,7 +62,7 @@ function assign() {
           <span>Linked patient record</span>
           <select v-model="patientId">
             <option v-for="p in patients" :key="p.id" :value="p.id">
-              {{ p.name }} · {{ p.age }}{{ p.sex }} · {{ p.barangay }}
+              {{ p.residentId }} · {{ p.name }} · {{ p.barangay }}
             </option>
           </select>
         </div>
@@ -141,14 +146,17 @@ function assign() {
     </article>
 
     <article class="card" style="margin-top:16px">
-      <h2>Cross-facility consultant matrix</h2>
-      <p class="muted">Full-time, visiting, on-call, and regional telehealth seats serving Valencia today.</p>
+      <div class="load-head">
+        <h2>Cross-facility consultant matrix</h2>
+        <PhysicianLoadFilter v-model:load="loadFilter" />
+      </div>
+      <p class="muted">Filter by load to send the next case to a desk that still has capacity.</p>
       <table>
         <thead>
           <tr><th>Clinician</th><th>Specialty</th><th>Site</th><th>Load</th></tr>
         </thead>
         <tbody>
-          <tr v-for="d in doctors" :key="d.id">
+          <tr v-for="d in matrix" :key="d.id">
             <td>{{ d.name }}</td>
             <td>{{ d.specialty }}</td>
             <td>{{ facilities.find(f => f.id === d.facilityId)?.name }}</td>

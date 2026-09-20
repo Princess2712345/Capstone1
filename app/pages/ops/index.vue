@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { matchesLoad, sortByLoad, type LoadFilter } from '~/utils/load'
+
 const {
   facilities,
   doctors,
@@ -10,6 +12,24 @@ const {
   facById,
   drugById
 } = usePlatform()
+
+const loadFilter = ref<LoadFilter>('all')
+const siteFilter = ref('all')
+
+const loadSites = computed(() => {
+  const ids = [...new Set(doctors.value.map(d => d.facilityId))]
+  return ids
+    .map(id => facById(id))
+    .filter((f): f is NonNullable<typeof f> => Boolean(f))
+})
+
+const rankedDoctors = computed(() => {
+  return sortByLoad(doctors.value).filter(d => {
+    if (!matchesLoad(d, loadFilter.value)) return false
+    if (siteFilter.value !== 'all' && d.facilityId !== siteFilter.value) return false
+    return true
+  })
+})
 
 const esiMix = computed(() => {
   const counts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
@@ -98,13 +118,18 @@ const tele = computed(() => doctors.value.filter(d => d.role === 'telehealth' ||
 
     <section class="grid-2" style="margin-top: 16px">
       <article class="card">
-        <h2>Physician load vs daily cap</h2>
-        <table>
+        <div class="load-head">
+          <h2>Physician load vs daily cap</h2>
+          <PhysicianLoadFilter v-model:load="loadFilter" v-model:site="siteFilter" :sites="loadSites" />
+        </div>
+        <p class="muted" style="margin:0 0 10px">{{ rankedDoctors.length }} {{ rankedDoctors.length === 1 ? 'clinician' : 'clinicians' }} · heaviest load first</p>
+        <p v-if="!rankedDoctors.length" class="empty">No physicians in this slice. Clear a filter to see the full matrix.</p>
+        <table v-else>
           <thead>
             <tr><th>Clinician</th><th>Role</th><th>Site</th><th>Load</th></tr>
           </thead>
           <tbody>
-            <tr v-for="d in doctors" :key="d.id">
+            <tr v-for="d in rankedDoctors" :key="d.id">
               <td>
                 <NuxtLink class="row-link" to="/clinicians">{{ d.name }}</NuxtLink>
                 <div class="muted">{{ d.specialty }}</div>

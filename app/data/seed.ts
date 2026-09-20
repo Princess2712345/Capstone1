@@ -24,16 +24,16 @@ export const doctors: Doctor[] = [
 ]
 
 export const patients: Patient[] = [
-  { id: 'p1', name: 'Rosa Cagampang', age: 58, sex: 'F', barangay: 'Poblacion', philhealth: '12-025184829-1', contact: '0917-441-2201', allergies: ['Ibuprofen'], conditions: ['Hypertension', 'T2DM'], meds: ['Amlodipine', 'Metformin'], notes: 'Konsulta refill. Prefers Cebuano.' },
-  { id: 'p2', name: 'Junrey Paler', age: 34, sex: 'M', barangay: 'Mailag', philhealth: '12-033910022-8', contact: '0918-220-1188', allergies: [], conditions: [], meds: [], notes: '' },
-  { id: 'p3', name: 'Aisha Bansuan', age: 27, sex: 'F', barangay: 'Lumbayao', philhealth: '12-041002911-4', contact: '0905-771-3340', allergies: ['Penicillin'], conditions: ['Pregnancy 28w'], meds: ['Ferrous sulfate'], notes: 'ANC at RHU 2.' },
-  { id: 'p4', name: 'Tomas Lumbo', age: 71, sex: 'M', barangay: 'Bagontaas', philhealth: '12-018220441-0', contact: '0939-118-4402', allergies: [], conditions: ['COPD'], meds: ['Salbutamol'], notes: 'Needs accompaniment.' },
-  { id: 'p5', name: 'Kenji Ampo', age: 4, sex: 'M', barangay: 'San Carlos', philhealth: '12-055119203-7', contact: '0912-880-2210', allergies: [], conditions: [], meds: [], notes: 'Guardian: Maricel Ampo.' },
-  { id: 'p6', name: 'Maricel Uy', age: 42, sex: 'F', barangay: 'Poblacion', philhealth: '12-029441102-3', contact: '0916-330-1184', allergies: [], conditions: ['Asthma'], meds: ['Salbutamol'], notes: '' },
-  { id: 'p7', name: 'Elias Dumanhog', age: 63, sex: 'M', barangay: 'Poblacion', philhealth: '12-011882044-6', contact: '0908-441-2290', allergies: [], conditions: ['CAD'], meds: ['Aspirin', 'Atorvastatin'], notes: 'Prior chest pain workup.' },
-  { id: 'p8', name: 'Rico Langit', age: 29, sex: 'M', barangay: 'Mailag', philhealth: '12-060118922-1', contact: '0915-228-0091', allergies: [], conditions: [], meds: [], notes: 'Motorcycle crash follow-up.' },
-  { id: 'p9', name: 'Fe Sumbilan', age: 51, sex: 'F', barangay: 'Bagontaas', philhealth: '12-044119300-8', contact: '0927-110-4482', allergies: [], conditions: ['Hypertension'], meds: ['Losartan'], notes: '' },
-  { id: 'p10', name: 'Lina Abrogar', age: 38, sex: 'F', barangay: 'Poblacion', philhealth: '12-038220155-2', contact: '0910-552-7714', allergies: [], conditions: [], meds: [], notes: 'Frequent no-show risk.' }
+  { id: 'p1', name: 'Rosa Cagampang', age: 58, sex: 'F', barangay: 'Poblacion', residentId: 'VLC-POB-0001', homeFacilityId: 'rhu1', philhealth: '12-025184829-1', contact: '0917-441-2201', allergies: ['Ibuprofen'], conditions: ['Hypertension', 'T2DM'], meds: ['Amlodipine', 'Metformin'], notes: 'Konsulta refill. Prefers Cebuano.' },
+  { id: 'p2', name: 'Junrey Paler', age: 34, sex: 'M', barangay: 'Mailag', residentId: 'VLC-MLG-0001', homeFacilityId: 'bhs-mailag', philhealth: '12-033910022-8', contact: '0918-220-1188', allergies: [], conditions: [], meds: [], notes: '' },
+  { id: 'p3', name: 'Aisha Bansuan', age: 27, sex: 'F', barangay: 'Lumbayao', residentId: 'VLC-LMB-0001', homeFacilityId: 'bhs-lumbayao', philhealth: '12-041002911-4', contact: '0905-771-3340', allergies: ['Penicillin'], conditions: ['Pregnancy 28w'], meds: ['Ferrous sulfate'], notes: 'ANC at RHU 2.' },
+  { id: 'p4', name: 'Tomas Lumbo', age: 71, sex: 'M', barangay: 'Bagontaas', residentId: 'VLC-BGT-0001', homeFacilityId: 'rhu2', philhealth: '12-018220441-0', contact: '0939-118-4402', allergies: [], conditions: ['COPD'], meds: ['Salbutamol'], notes: 'Needs accompaniment.' },
+  { id: 'p5', name: 'Kenji Ampo', age: 4, sex: 'M', barangay: 'San Carlos', residentId: 'VLC-SCL-0001', homeFacilityId: 'bhs-sancarlos', philhealth: '12-055119203-7', contact: '0912-880-2210', allergies: [], conditions: [], meds: [], notes: 'Guardian: Maricel Ampo.' },
+  { id: 'p6', name: 'Maricel Uy', age: 42, sex: 'F', barangay: 'Poblacion', residentId: 'VLC-POB-0002', homeFacilityId: 'rhu1', philhealth: '12-029441102-3', contact: '0916-330-1184', allergies: [], conditions: ['Asthma'], meds: ['Salbutamol'], notes: '' },
+  { id: 'p7', name: 'Elias Dumanhog', age: 63, sex: 'M', barangay: 'Poblacion', residentId: 'VLC-POB-0003', homeFacilityId: 'rhu1', philhealth: '12-011882044-6', contact: '0908-441-2290', allergies: [], conditions: ['CAD'], meds: ['Aspirin', 'Atorvastatin'], notes: 'Prior chest pain workup.' },
+  { id: 'p8', name: 'Rico Langit', age: 29, sex: 'M', barangay: 'Mailag', residentId: 'VLC-MLG-0002', homeFacilityId: 'bhs-mailag', philhealth: '12-060118922-1', contact: '0915-228-0091', allergies: [], conditions: [], meds: [], notes: 'Motorcycle crash follow-up.' },
+  { id: 'p9', name: 'Fe Sumbilan', age: 51, sex: 'F', barangay: 'Bagontaas', residentId: 'VLC-BGT-0002', homeFacilityId: 'rhu2', philhealth: '12-044119300-8', contact: '0927-110-4482', allergies: [], conditions: ['Hypertension'], meds: ['Losartan'], notes: '' },
+  { id: 'p10', name: 'Lina Abrogar', age: 38, sex: 'F', barangay: 'Poblacion', residentId: 'VLC-POB-0004', homeFacilityId: 'rhu1', philhealth: '12-038220155-2', contact: '0910-552-7714', allergies: [], conditions: [], meds: [], notes: 'Frequent no-show risk.' }
 ]
 
 export const drugs: Drug[] = [

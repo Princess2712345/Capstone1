@@ -9,7 +9,7 @@ import {
   prescriptions as seedRx,
   vouchers as seedVouchers
 } from '~/data/seed'
-import { extractSymptoms, labsFor, scoreEsi } from '~/utils/nlp'
+import { catchmentOf, nextResidentId, stationName } from '~/data/catchment'
 import type {
   Appointment,
   AuditEvent,
@@ -27,7 +27,7 @@ import type {
   TriageResult
 } from '~/utils/types'
 
-const STORE_KEY = 'vco-ops-v4'
+const STORE_KEY = 'vco-ops-v5'
 const SERVICE_TIMES = [
   '08:00', '08:15', '08:30', '08:45', '09:00', '09:15', '09:30', '09:45',
   '10:00', '10:15', '10:30', '10:45', '11:00', '11:15', '11:30', '11:45',
@@ -314,7 +314,8 @@ export function usePlatform() {
     }
 
     const preferred = input.facilityId
-    const order = [...new Set([preferred, 'rhu2', 'bhs-mailag', 'rhu1', 'bhs-lumbayao', 'bhs-sancarlos'])]
+    const home = catchmentOf(input.barangay).homeFacilityId
+    const order = [...new Set([preferred, home, 'rhu2', 'bhs-mailag', 'rhu1', 'bhs-lumbayao', 'bhs-sancarlos'])]
     let slot = nextOpenSlot(preferred)
     let reroutedTo: string | undefined
     const preferredFac = facById(preferred)
@@ -764,12 +765,15 @@ export function usePlatform() {
   }
 
   function addPatient(input: Partial<Patient> & { name: string; age: number; sex: 'F' | 'M'; barangay: string }) {
+    const home = catchmentOf(input.barangay)
     const p: Patient = {
       id: nextId('p'),
       name: input.name.trim(),
       age: input.age,
       sex: input.sex,
-      barangay: input.barangay,
+      barangay: home.name,
+      residentId: input.residentId || nextResidentId(home.name, patients.value),
+      homeFacilityId: input.homeFacilityId || home.homeFacilityId,
       philhealth: input.philhealth?.trim() || '12-pending-konsulta',
       contact: input.contact?.trim() || '',
       allergies: input.allergies ?? [],
@@ -778,8 +782,8 @@ export function usePlatform() {
       notes: input.notes ?? ''
     }
     patients.value.unshift(p)
-    log('Patient', `Registered ${p.name}`)
-    notify(`${p.name} added to the municipal registry.`)
+    log('Patient', `Registered ${p.name} ${p.residentId} · ${p.barangay} / ${stationName(p.homeFacilityId)}`)
+    notify(`${p.name} added to the municipal registry as ${p.residentId}.`)
     return p
   }
 
@@ -787,8 +791,27 @@ export function usePlatform() {
     const p = patientById(id)
     if (!p) return
     Object.assign(p, patch)
+    if (patch.barangay) {
+      const home = catchmentOf(patch.barangay)
+      p.barangay = home.name
+      p.homeFacilityId = home.homeFacilityId
+    }
     log('Patient', `Updated ${p.name}`)
     notify(`${p.name} chart saved.`)
+  }
+
+  function ensurePatientIdentities() {
+    const next: Patient[] = []
+    for (const p of patients.value) {
+      const home = catchmentOf(p.barangay || 'Poblacion')
+      next.push({
+        ...p,
+        barangay: home.name,
+        homeFacilityId: p.homeFacilityId || home.homeFacilityId,
+        residentId: p.residentId || nextResidentId(home.name, next)
+      })
+    }
+    patients.value = next
   }
 
   function addDoctor(input: Omit<Doctor, 'id' | 'todayLoad'> & { todayLoad?: number }) {
@@ -854,7 +877,7 @@ export function usePlatform() {
     }
     return {
       patients: patients.value.filter(p =>
-        [p.name, p.barangay, p.philhealth, p.contact].join(' ').toLowerCase().includes(q)
+        [p.name, p.barangay, p.residentId, p.philhealth, p.contact, stationName(p.homeFacilityId)].join(' ').toLowerCase().includes(q)
       ),
       appointments: appointments.value.filter(a =>
         [a.patientName, a.time, a.specialty, a.status].join(' ').toLowerCase().includes(q)
@@ -926,6 +949,7 @@ export function usePlatform() {
       },
       { deep: true }
     )
+    ensurePatientIdentities()
   }
 
   function resetOps() {
