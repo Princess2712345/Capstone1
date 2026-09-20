@@ -14,6 +14,7 @@ async function submit() {
 
 <template>
   <form class="auth-card" @submit.prevent="submit">
+    <CitySeal size="sm" />
     <h2>Staff log in</h2>
     <p class="muted">Use your City Health or facility directory email.</p>
     <label class="field" style="margin-top:16px">

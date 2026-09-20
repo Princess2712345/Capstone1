@@ -41,6 +41,8 @@ export default defineNuxtConfig({
         }
       ],
       link: [
+        { rel: 'icon', type: 'image/png', href: '/valencia-seal.png' },
+        { rel: 'apple-touch-icon', href: '/valencia-seal.png' },
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         {
           rel: 'preconnect',

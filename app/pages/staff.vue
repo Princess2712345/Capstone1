@@ -37,7 +37,7 @@ function add() {
       <div>
         <div class="brand-kicker" style="color: var(--leaf)">Access control</div>
         <h1>Staff directory</h1>
-        <p class="lede">City Health, RHU, BHW, and pharmacy accounts that can sign in to this operations file. You are signed in as {{ session?.email }}.</p>
+        <p class="lede">City Health, RHU, BHW, and dispensing-window accounts that can sign in to this operations file. You are signed in as {{ session?.email }}.</p>
       </div>
     </header>
 

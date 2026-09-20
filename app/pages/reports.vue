@@ -19,6 +19,10 @@ const {
 const done = computed(() => appointments.value.filter(a => a.status === 'done').length)
 const er = computed(() => appointments.value.filter(a => a.channel === 'emergency' && a.patientName).length)
 const openRx = computed(() => prescriptions.value.filter(p => p.status !== 'dispensed' && p.status !== 'voided').length)
+
+function printReport() {
+  window.print()
+}
 </script>
 
 <template>
@@ -28,6 +32,12 @@ const openRx = computed(() => prescriptions.value.filter(p => p.status !== 'disp
         <div class="brand-kicker" style="color: var(--leaf)">CHO analytics</div>
         <h1>Operations reports</h1>
         <p class="lede">Throughput, acuity mix, stock risk, and an audit trail of every desk action on this municipal file.</p>
+      </div>
+      <div class="toolbar">
+        <NuxtLink class="btn" to="/schedule">Open queue</NuxtLink>
+        <NuxtLink class="btn secondary" to="/pharmacy">e-Rx desk</NuxtLink>
+        <NuxtLink class="btn secondary" to="/supply">Supply</NuxtLink>
+        <button class="btn secondary" type="button" @click="printReport">Print</button>
       </div>
     </header>
 

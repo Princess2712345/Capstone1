@@ -36,8 +36,9 @@ async function submit() {
 
 <template>
   <form class="auth-card" @submit.prevent="submit">
+    <CitySeal size="sm" />
     <h2>Create a staff account</h2>
-    <p class="muted">For CHO, RHU, BHW, and pharmacy desks in Valencia City.</p>
+    <p class="muted">For CHO, RHU, BHW, and e-Rx window desks in Valencia City.</p>
     <label class="field" style="margin-top:16px">
       <span>Full name</span>
       <input v-model="name" required>

@@ -17,7 +17,11 @@ const {
   generateBoard
 } = usePlatform()
 
-const filterFac = ref('rhu1')
+const route = useRoute()
+const filterFac = ref(typeof route.query.site === 'string' ? route.query.site : 'rhu1')
+watch(() => route.query.site, (v) => {
+  if (typeof v === 'string' && v) filterFac.value = v
+})
 const bookPatient = ref(patients.value[1]?.id ?? '')
 const walkName = ref('')
 const walkAge = ref(41)

@@ -36,30 +36,32 @@ const tele = computed(() => doctors.value.filter(d => d.role === 'telehealth' ||
       <div class="toolbar">
         <NuxtLink class="btn" to="/triage">Route a complaint</NuxtLink>
         <NuxtLink class="btn secondary" to="/schedule">Open queue</NuxtLink>
+        <NuxtLink class="btn secondary" to="/pharmacy">e-Rx desk</NuxtLink>
+        <NuxtLink class="btn secondary" to="/reports">Reports</NuxtLink>
       </div>
     </header>
 
     <section class="grid-4" style="margin-bottom: 16px">
-      <article class="card">
+      <NuxtLink class="card" to="/facilities">
         <div class="stat-value">{{ rhu1Load }}%</div>
         <div class="stat-label">RHU 1 walk-in buffer</div>
-        <p class="stat-note">Hard cap nearly reached. Low-acuity overflow should pivot to Mailag or RHU 2.</p>
-      </article>
-      <article class="card">
+        <p class="stat-note">Open facilities to recap or reroute walk-ins.</p>
+      </NuxtLink>
+      <NuxtLink class="card" to="/schedule">
         <div class="stat-value">{{ inQueue }}</div>
         <div class="stat-label">Named slots in play</div>
-        <p class="stat-note">Check in, start consult, complete, or release no-shows from the hybrid queue.</p>
-      </article>
-      <article class="card">
+        <p class="stat-note">Check in, start consult, complete, or release no-shows.</p>
+      </NuxtLink>
+      <NuxtLink class="card" to="/pharmacy">
         <div class="stat-value">{{ rxOpen }}</div>
         <div class="stat-label">Open e-prescriptions</div>
-        <p class="stat-note">Partial fill (e.g. 10 of 30 tablets) mints a voucher redeemable at an adjacent RHU or BHS.</p>
-      </article>
-      <article class="card">
+        <p class="stat-note">Sign, scan QR, or redeem a transfer voucher.</p>
+      </NuxtLink>
+      <NuxtLink class="card" to="/supply">
         <div class="stat-value">{{ criticalBatches.length }}</div>
         <div class="stat-label">Critical / near-expiry lots</div>
-        <p class="stat-note">FEFO queue prefers earliest expiry before any peer transfer.</p>
-      </article>
+        <p class="stat-note">FEFO queue and CHO purchase drafts.</p>
+      </NuxtLink>
     </section>
 
     <section class="split">
@@ -67,7 +69,7 @@ const tele = computed(() => doctors.value.filter(d => d.role === 'telehealth' ||
         <h2>Facility buffer matrix</h2>
         <div v-for="f in facilities.filter(x => x.walkInCap > 0)" :key="f.id" style="margin-bottom: 12px">
           <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:4px">
-            <NuxtLink class="row-link" to="/facilities">{{ f.name }}</NuxtLink>
+            <NuxtLink class="row-link" :to="{ path: '/schedule', query: { site: f.id } }">{{ f.name }}</NuxtLink>
             <span class="muted">{{ f.type }} · {{ f.barangay }} · {{ f.walkInUsed }}/{{ f.walkInCap }}</span>
           </div>
           <div class="meter" :class="{ full: f.walkInUsed / f.walkInCap >= 1, hot: f.walkInUsed / f.walkInCap >= 0.8 }">
@@ -103,7 +105,10 @@ const tele = computed(() => doctors.value.filter(d => d.role === 'telehealth' ||
           </thead>
           <tbody>
             <tr v-for="d in doctors" :key="d.id">
-              <td>{{ d.name }}<div class="muted">{{ d.specialty }}</div></td>
+              <td>
+                <NuxtLink class="row-link" to="/clinicians">{{ d.name }}</NuxtLink>
+                <div class="muted">{{ d.specialty }}</div>
+              </td>
               <td>{{ d.role }}</td>
               <td>{{ facById(d.facilityId)?.name }}</td>
               <td>
@@ -124,7 +129,7 @@ const tele = computed(() => doctors.value.filter(d => d.role === 'telehealth' ||
           </thead>
           <tbody>
             <tr v-for="b in criticalBatches" :key="b.id">
-              <td>{{ b.lot }}</td>
+              <td><NuxtLink class="row-link" to="/supply">{{ b.lot }}</NuxtLink></td>
               <td>{{ drugById(b.drugId)?.generic }}</td>
               <td>{{ facById(b.facilityId)?.name }}</td>
               <td :class="b.qty <= 20 ? 'stock-critical' : 'stock-moderate'">{{ b.qty }}</td>

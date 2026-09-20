@@ -22,7 +22,7 @@ const mine = computed(() => {
   return prescriptions.value.filter(r => r.patientId === id && r.status !== 'voided')
 })
 
-const scanned = computed(() => {
+const shown = computed(() => {
   const code = qr.value.trim().toUpperCase()
   if (!code) return null
   return prescriptions.value.find(r => r.qr.toUpperCase() === code && r.status !== 'voided') ?? null
@@ -45,35 +45,32 @@ function findRecord() {
 </script>
 
 <template>
-  <div class="band" style="padding-top:32px">
-    <header class="page-head">
-      <div>
-        <div class="brand-kicker" style="color: var(--leaf)">Pharmacy window</div>
-        <h1>e-Prescription QR</h1>
-        <p class="lede">Show this code at RHU or BHS pharmacy. One scan fills from the earliest-expiry lot. Fully used codes cannot be scanned again.</p>
-      </div>
+  <div class="desk">
+    <header class="desk-head">
+      <p class="lp-eyebrow">e-Prescription</p>
+      <h1>Show this QR at the RHU or BHS window.</h1>
+      <p class="lp-lede">One scan fills from the earliest-expiry lot. Fully used codes cannot be scanned again.</p>
     </header>
 
-    <section class="split">
-      <article class="card">
-        <h2>Open my scripts</h2>
-        <p v-if="patient" class="muted">{{ patient.name }}</p>
-        <div v-else class="grid-2">
+    <section class="desk-hero">
+      <article class="desk-panel">
+        <h2>Open a script</h2>
+        <p v-if="patient" class="muted" style="margin-top:0">{{ patient.name }}</p>
+        <div v-else class="form-grid form-grid-2">
           <label class="field"><span>Mobile</span><input v-model="lookup.contact"></label>
           <label class="field"><span>PhilHealth</span><input v-model="lookup.philhealth"></label>
         </div>
-        <button v-if="!patient" class="btn" type="button" style="margin-top:12px" @click="findRecord">Find my e-Rx</button>
+        <button v-if="!patient" class="btn" type="button" style="margin-top:16px" @click="findRecord">Find my e-Rx</button>
         <p v-if="notice" class="field-error">{{ notice }}</p>
-        <label class="field" style="margin-top:14px">
-          <span>Or type the QR code from the clinician</span>
+        <label class="field" style="margin-top:16px">
+          <span>QR code</span>
           <input v-model="qr" placeholder="RX-VLC-7K2M">
         </label>
-        <p class="muted">Demo fill: Rosa’s code RX-VLC-7K2M</p>
+        <p class="muted">Demo: Rosa’s code RX-VLC-7K2M</p>
       </article>
-
-      <article class="card" v-if="shown">
+      <article class="desk-panel" v-if="shown">
         <h2>{{ shown.qr }}</h2>
-        <div style="display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap">
+        <div class="lp-qr-row">
           <div>
             <div class="qr" aria-hidden="true" />
             <div class="muted" style="margin-top:6px">{{ shown.status }}</div>
@@ -83,26 +80,24 @@ function findRecord() {
             <p class="muted">Signed {{ docById(shown.doctorId)?.name }} · {{ shown.issuedAt }}</p>
             <ul>
               <li v-for="item in shown.items" :key="item.drugId">
-                {{ drugById(item.drugId)?.generic }} · {{ item.dispensed }}/{{ item.qty }} · {{ item.sig }}
+                {{ drugById(item.drugId)?.generic }} · {{ item.dispensed }}/{{ item.qty }}
               </li>
             </ul>
-            <p v-if="shown.status === 'dispensed'" class="muted">This QR is closed after a full fill.</p>
             <div v-for="v in shownVouchers" :key="v.id" class="flash" style="margin-top:12px">
               <strong>{{ v.code }}</strong>
               · remaining {{ v.remaining }} {{ drugById(v.drugId)?.generic }}
-              · redeem at {{ facById(v.toFacilityId)?.name }}
-              · {{ v.status }}
+              · {{ facById(v.toFacilityId)?.name }}
             </div>
           </div>
         </div>
       </article>
-      <article class="card" v-else>
+      <article class="desk-panel" v-else>
         <h2>No script on screen</h2>
-        <p class="muted">Book a visit and wait for the clinician to sign, or enter a QR code you were given at the desk.</p>
+        <p>Book a visit and wait for the clinician to sign, or enter the QR you were given at the desk.</p>
       </article>
     </section>
 
-    <article class="card" style="margin-top:16px" v-if="mine.length">
+    <article class="desk-panel" style="margin-top:20px" v-if="mine.length">
       <h2>Ledger</h2>
       <table>
         <thead><tr><th>QR</th><th>Status</th><th>Items</th></tr></thead>

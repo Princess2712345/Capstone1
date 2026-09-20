@@ -4,6 +4,9 @@ definePageMeta({ layout: 'portal' })
 const { appointments, patients, facById, docById, cancelAppointment, findPatientForPortal } = usePlatform()
 const { identity, remember } = usePatientPortal()
 
+const lookup = reactive({ contact: '', philhealth: '', name: '' })
+const notice = ref('')
+
 watch(identity, (id) => {
   if (id?.contact && !lookup.contact) lookup.contact = id.contact
 }, { immediate: true })
@@ -25,6 +28,7 @@ const visits = computed(() => {
 })
 
 const upcoming = computed(() => visits.value.filter(a => a.status !== 'done' && a.status !== 'released'))
+const done = computed(() => visits.value.filter(a => a.status === 'done'))
 
 function findRecord() {
   notice.value = ''
@@ -42,48 +46,44 @@ function cancel(id: string) {
 </script>
 
 <template>
-  <div class="band" style="padding-top:32px">
-    <header class="page-head">
-      <div>
-        <div class="brand-kicker" style="color: var(--leaf)">Your window</div>
-        <h1>My visit</h1>
-        <p class="lede">Look up a hold with the mobile number used at booking. Cancel if you cannot come — that window returns to walk-ins.</p>
-      </div>
+  <div class="desk">
+    <header class="desk-head">
+      <p class="lp-eyebrow">My visit</p>
+      <h1>Look up the window you already hold.</h1>
+      <p class="lp-lede">Use the mobile number from booking. Cancel if you cannot come — that slot returns to walk-ins.</p>
     </header>
 
-    <article class="card" v-if="!patient">
+    <article v-if="!patient" class="desk-panel">
       <h2>Find my record</h2>
-      <div class="grid-2">
+      <div class="form-grid form-grid-2">
         <label class="field"><span>Mobile</span><input v-model="lookup.contact"></label>
         <label class="field"><span>PhilHealth</span><input v-model="lookup.philhealth"></label>
       </div>
       <p v-if="notice" class="field-error">{{ notice }}</p>
-      <button class="btn" type="button" style="margin-top:12px" @click="findRecord">Open my visits</button>
+      <button class="btn" type="button" style="margin-top:16px" @click="findRecord">Open my visits</button>
     </article>
 
     <div v-else>
-      <p class="muted" style="margin-bottom:12px">Signed in as {{ patient.name }} · {{ patient.contact || 'no mobile' }}</p>
-      <article class="card">
-        <h2>Upcoming holds</h2>
-        <p v-if="!upcoming.length" class="empty">No open online hold. <NuxtLink class="row-link" to="/portal/book">Book a visit</NuxtLink></p>
-        <div v-for="a in upcoming" :key="a.id" class="slot">
-          <strong>{{ a.time }}</strong>
-          <div>
-            {{ facById(a.facilityId)?.name }}
-            <div class="muted">{{ a.status }} · {{ a.specialty }} · {{ docById(a.doctorId)?.name }}</div>
-            <div v-if="a.note" class="muted">{{ a.note }}</div>
-            <p class="muted">Arrive 5–10 minutes early.</p>
+      <p class="muted" style="margin:0 0 16px">{{ patient.name }} · {{ patient.contact || 'no mobile' }}</p>
+      <section class="desk-hero">
+        <article class="desk-panel">
+          <h2>Upcoming holds</h2>
+          <p v-if="!upcoming.length" class="empty">No open online hold. <NuxtLink class="row-link" to="/portal/book">Book a visit</NuxtLink></p>
+          <div v-for="a in upcoming" :key="a.id" class="slot">
+            <strong>{{ a.time }}</strong>
+            <div>
+              {{ facById(a.facilityId)?.name }}
+              <div class="muted">{{ a.status }} · {{ a.specialty }} · {{ docById(a.doctorId)?.name }}</div>
+            </div>
+            <button class="btn secondary" type="button" @click="cancel(a.id)">Cancel</button>
           </div>
-          <button class="btn secondary" type="button" @click="cancel(a.id)">Cancel visit</button>
-        </div>
-      </article>
-      <article class="card" style="margin-top:16px">
-        <h2>Earlier visits today</h2>
-        <p v-if="visits.filter(v => v.status === 'done').length === 0" class="empty">No completed consults on this file today.</p>
-        <p v-for="a in visits.filter(v => v.status === 'done')" :key="a.id" class="muted">
-          {{ a.time }} · {{ facById(a.facilityId)?.name }} · done
-        </p>
-      </article>
+        </article>
+        <article class="desk-panel">
+          <h2>Earlier today</h2>
+          <p v-if="!done.length" class="empty">No completed consults on this file today.</p>
+          <p v-for="a in done" :key="a.id" class="muted">{{ a.time }} · {{ facById(a.facilityId)?.name }} · done</p>
+        </article>
+      </section>
     </div>
   </div>
 </template>

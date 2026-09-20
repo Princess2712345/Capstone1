@@ -12,9 +12,14 @@ const form = reactive({
   prc: '',
   contact: ''
 })
+const notice = ref('')
 
 function save() {
-  if (!form.name.trim() || !form.prc.trim()) return
+  if (!form.name.trim() || !form.prc.trim()) {
+    notice.value = 'Name and PRC number are required.'
+    return
+  }
+  notice.value = ''
   addDoctor({ ...form, name: form.name.trim() })
   form.name = ''
   form.prc = ''
@@ -57,6 +62,7 @@ function save() {
           </label>
           <label class="field"><span>Daily cap</span><input v-model.number="form.dailyCap" type="number" min="1"></label>
         </div>
+        <p v-if="notice" class="field-error">{{ notice }}</p>
         <button class="btn" type="button" style="margin-top:12px" @click="save">Add to matrix</button>
       </article>
       <article class="card">

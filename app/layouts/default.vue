@@ -18,9 +18,15 @@ async function goSearch() {
   <div class="app-shell">
     <aside class="sidebar">
       <div>
-        <div class="brand-kicker">LGU Valencia City · CHO</div>
-        <h1 class="brand-title">Care Ops</h1>
-        <p class="brand-sub">Municipal command system for routing, queues, charts, e-Rx, and FEFO supply.</p>
+        <NuxtLink to="/ops" class="sidebar-brand">
+          <CitySeal size="md" />
+          <div>
+            <div class="brand-kicker">Local Government Unit</div>
+            <h1 class="brand-title">Valencia</h1>
+            <p class="brand-sub" style="margin:0">City Health Office</p>
+          </div>
+        </NuxtLink>
+        <p class="brand-sub">Routing, queues, charts, e-Rx, and FEFO for RHUs and BHS.</p>
         <p v-if="session" class="session-chip">{{ session.name }} · {{ session.role }} · {{ session.facility }}</p>
       </div>
       <nav class="nav-list">
@@ -41,6 +47,7 @@ async function goSearch() {
         <NuxtLink class="nav-link" to="/search">Search</NuxtLink>
       </nav>
       <div class="sidebar-foot">
+        <NuxtLink class="btn secondary" to="/" style="width:100%; margin-bottom:8px; display:block; text-align:center">Public site</NuxtLink>
         <button class="btn secondary" type="button" style="width:100%; margin-bottom:8px" @click="signOut">Sign out</button>
         <button class="btn secondary" type="button" style="width:100%; margin-bottom:12px" @click="resetOps">Restore baseline data</button>
         Valencia City Health operations. Not a diagnostic device.

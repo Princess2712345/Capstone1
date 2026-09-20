@@ -121,7 +121,7 @@ function sign() {
 
     <section class="split" style="margin-top:16px">
       <article class="card">
-        <h2>Pharmacy / BHW QR desk</h2>
+        <h2>RHU / BHS QR window</h2>
         <label class="field">
           <span>Scan or type QR</span>
           <input v-model="scan">

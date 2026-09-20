@@ -1,18 +1,13 @@
 <template>
   <div class="auth-shell">
     <aside class="auth-aside">
-      <div class="auth-glow" aria-hidden="true" />
-      <div class="auth-orb auth-orb-a" aria-hidden="true" />
-      <div class="auth-orb auth-orb-b" aria-hidden="true" />
-      <div class="auth-orb auth-orb-c" aria-hidden="true" />
-      <div class="auth-grid" aria-hidden="true" />
-
       <div class="auth-aside-inner">
         <div>
-          <NuxtLink to="/" class="brand-kicker auth-kicker">LGU Valencia City · CHO</NuxtLink>
-          <h1>Care Ops</h1>
+          <CitySeal size="lg" />
+          <NuxtLink to="/" class="brand-kicker auth-kicker">Local Government Unit</NuxtLink>
+          <h1>City of Valencia</h1>
           <p class="auth-lede">
-            Staff access for rural health units, barangay stations, pharmacy desks, and the City Health command floor.
+            Staff access for the City Health Office, rural health units, and barangay stations.
           </p>
           <div class="auth-pills">
             <span>Routing</span>
@@ -25,21 +20,21 @@
         <div class="auth-tiles">
           <article class="auth-tile">
             <div class="auth-tile-kicker">RHU 1 · Poblacion</div>
-            <strong>90%</strong>
-            <p>Walk-in buffer near cap. Overflow to RHU 2 and BHS Mailag.</p>
+            <strong>Walk-in hub</strong>
+            <p>Overflow routes to RHU 2 and BHS Mailag when the buffer is full.</p>
           </article>
           <article class="auth-tile">
             <div class="auth-tile-kicker">Network</div>
             <strong>7 sites</strong>
-            <p>CHO, 2 RHUs, 3 BHS, Infirmary ER on one municipal board.</p>
+            <p>CHO, 2 RHUs, 3 BHS, Infirmary ER on one municipal file.</p>
           </article>
           <article class="auth-tile auth-tile-wide">
-            <div class="auth-tile-kicker">Today’s desks</div>
-            <p>Specialty routing · hybrid 15-minute slots · Konsulta QR · FEFO lots</p>
+            <div class="auth-tile-kicker">Staff desks</div>
+            <p>Specialty routing · hybrid 15-minute slots · Konsulta e-Rx · FEFO lots</p>
           </article>
         </div>
 
-        <p class="auth-foot">Staff directory for CHO, RHU, BHS, and pharmacy desks. Not connected to PhilHealth identity.</p>
+        <p class="auth-foot">Directory for CHO, RHU, BHW, and dispensing windows. Not connected to PhilHealth identity.</p>
       </div>
     </aside>
     <main class="auth-main">

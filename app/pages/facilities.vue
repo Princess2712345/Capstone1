@@ -4,6 +4,11 @@ const { facilities, appointments, generateBoard, updateFacility } = usePlatform(
 function load(id: string) {
   return appointments.value.filter(a => a.facilityId === id && a.patientName && a.status !== 'cancelled' && a.status !== 'released').length
 }
+
+async function openBoard(id: string) {
+  generateBoard(id)
+  await navigateTo({ path: '/schedule', query: { site: id } })
+}
 </script>
 
 <template>
@@ -33,8 +38,8 @@ function load(id: string) {
           </label>
         </div>
         <div class="toolbar">
-          <button class="btn" type="button" @click="generateBoard(f.id)">Open full day board</button>
-          <NuxtLink class="btn secondary" to="/schedule">Queue desk</NuxtLink>
+          <button class="btn" type="button" @click="openBoard(f.id)">Open full day board</button>
+          <NuxtLink class="btn secondary" :to="{ path: '/schedule', query: { site: f.id } }">Queue desk</NuxtLink>
         </div>
       </article>
     </section>
