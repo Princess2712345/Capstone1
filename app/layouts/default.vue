@@ -19,14 +19,14 @@ async function goSearch() {
     <aside class="sidebar">
       <div>
         <NuxtLink to="/ops" class="sidebar-brand">
-          <CitySeal size="md" />
+          <BrandMark size="md" />
           <div>
-            <div class="brand-kicker">Local Government Unit</div>
-            <h1 class="brand-title">Valencia</h1>
-            <p class="brand-sub" style="margin:0">City Health Office</p>
+            <div class="brand-kicker">Valencia Care</div>
+            <h1 class="brand-title">Staff workspace</h1>
+            <p class="brand-sub" style="margin:0">Municipal health network</p>
           </div>
         </NuxtLink>
-        <p class="brand-sub">Routing, queues, charts, e-Rx, and FEFO for RHUs and BHS.</p>
+        <p class="brand-sub">Intake, queues, charts, e-Rx, and FEFO for RHUs and BHS.</p>
         <p v-if="session" class="session-chip">{{ session.name }} · {{ session.role }} · {{ session.facility }}</p>
       </div>
       <nav class="nav-list">

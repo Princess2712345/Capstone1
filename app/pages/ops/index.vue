@@ -41,16 +41,23 @@ const esiMix = computed(() => {
 
 const rxOpen = computed(() => prescriptions.value.filter(p => p.status !== 'dispensed' && p.status !== 'voided').length)
 const tele = computed(() => doctors.value.filter(d => d.role === 'telehealth' || d.role === 'visiting').length)
+const liveQueue = computed(() =>
+  appointments.value
+    .filter(a => a.patientId && a.status !== 'cancelled' && a.status !== 'open')
+    .sort((a, b) => a.time.localeCompare(b.time))
+    .slice(0, 6)
+)
+const doneToday = computed(() => appointments.value.filter(a => a.status === 'done').length)
 </script>
 
 <template>
   <div>
     <header class="page-head">
       <div>
-        <div class="brand-kicker" style="color: var(--leaf)">City Health Office · 18 September 2026</div>
-        <h1>Valencia municipal command floor</h1>
+        <div class="brand-kicker" style="color: var(--leaf)">Staff workspace · Valencia RHU 1</div>
+        <h1>Today’s patient flow</h1>
         <p class="lede">
-          Live picture of RHU 1, RHU 2, satellite BHS, and Infirmary ER — specialty routing, 15-minute hybrid slots, charts, e-Rx, and FEFO risk on one desk.
+          Live queues, walk-in capacity, and physician load across the municipal network.
         </p>
       </div>
       <div class="toolbar">
@@ -61,28 +68,63 @@ const tele = computed(() => doctors.value.filter(d => d.role === 'telehealth' ||
       </div>
     </header>
 
+    <article class="card" style="margin-bottom:16px; display:flex; justify-content:space-between; gap:16px; align-items:center; flex-wrap:wrap; border-color:#f3c7c2; background:#fff6f5">
+      <div>
+        <div class="brand-kicker" style="color:var(--danger)">Needs attention</div>
+        <strong>High-urgency cases wait on the live board.</strong>
+        <p class="muted" style="margin:4px 0 0">Triage notes and ESI 1–2 never sit in OPD.</p>
+      </div>
+      <NuxtLink class="btn" to="/schedule" style="background:#c2413b">Review queue →</NuxtLink>
+    </article>
+
     <section class="grid-4" style="margin-bottom: 16px">
-      <NuxtLink class="card" to="/facilities">
-        <div class="stat-value">{{ rhu1Load }}%</div>
-        <div class="stat-label">RHU 1 walk-in buffer</div>
-        <p class="stat-note">Open facilities to recap or reroute walk-ins.</p>
+      <NuxtLink class="card" to="/schedule">
+        <div class="stat-label">Today’s appointments</div>
+        <div class="stat-value">{{ inQueue }}</div>
+        <p class="stat-note">Named slots in play</p>
       </NuxtLink>
       <NuxtLink class="card" to="/schedule">
-        <div class="stat-value">{{ inQueue }}</div>
-        <div class="stat-label">Named slots in play</div>
-        <p class="stat-note">Check in, start consult, complete, or release no-shows.</p>
+        <div class="stat-label">Waiting patients</div>
+        <div class="stat-value">{{ liveQueue.length }}</div>
+        <p class="stat-note">Across live queues</p>
       </NuxtLink>
-      <NuxtLink class="card" to="/pharmacy">
-        <div class="stat-value">{{ rxOpen }}</div>
-        <div class="stat-label">Open e-prescriptions</div>
-        <p class="stat-note">Sign, scan QR, or redeem a transfer voucher.</p>
+      <NuxtLink class="card" to="/facilities">
+        <div class="stat-label">Walk-in capacity</div>
+        <div class="stat-value">{{ rhu1Load }}%</div>
+        <p class="stat-note">Valencia RHU 1</p>
       </NuxtLink>
-      <NuxtLink class="card" to="/supply">
-        <div class="stat-value">{{ criticalBatches.length }}</div>
-        <div class="stat-label">Critical / near-expiry lots</div>
-        <p class="stat-note">FEFO queue and CHO purchase drafts.</p>
+      <NuxtLink class="card" to="/reports">
+        <div class="stat-label">Completed today</div>
+        <div class="stat-value">{{ doneToday }}</div>
+        <p class="stat-note">{{ rxOpen }} open e-Rx · {{ tele }} visiting seats</p>
       </NuxtLink>
     </section>
+
+    <article class="card" style="margin-bottom:16px">
+      <div class="load-head">
+        <div>
+          <p class="pt-kicker">Live queue · Valencia RHU 1</p>
+          <h2>Today’s patient flow</h2>
+        </div>
+        <NuxtLink class="btn secondary" to="/patients">+ Register patient</NuxtLink>
+      </div>
+      <table>
+        <thead><tr><th>Time</th><th>Patient</th><th>Type</th><th>Doctor</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr v-for="a in liveQueue" :key="a.id">
+            <td>{{ a.time }}</td>
+            <td>
+              <NuxtLink v-if="a.patientId" class="row-link" :to="`/patients/${a.patientId}`">{{ a.patientName }}</NuxtLink>
+              <span v-else>{{ a.patientName }}</span>
+            </td>
+            <td>{{ a.channel }}</td>
+            <td>{{ a.specialty }}</td>
+            <td>{{ a.status }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="margin-top:10px"><NuxtLink class="vc-link" to="/schedule">Open full queue →</NuxtLink></p>
+    </article>
 
     <section class="split">
       <article class="card">

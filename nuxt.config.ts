@@ -29,15 +29,15 @@ export default defineNuxtConfig({
       stripBrokenDevtoolsPlugin(config.plugins)
     }
   },
-  css: ['~/assets/css/main.css'],
+  css: ['~/assets/css/main.css', '~/assets/css/vc.css'],
   app: {
     head: {
-      title: 'Valencia CHO · Integrated Health Platform',
+      title: 'Valencia Care — AI-Driven Integrated Health Platform',
       meta: [
         {
           name: 'description',
           content:
-            'LGU Valencia City prototype for specialty routing, hybrid scheduling, and prescription supply-chain operations.'
+            'Valencia Care connects patients, healthcare workers, doctors, and local facilities in one municipal health network.'
         }
       ],
       link: [
@@ -51,7 +51,7 @@ export default defineNuxtConfig({
         },
         {
           rel: 'stylesheet',
-          href: 'https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650;9..144,720&family=Figtree:wght@400;500;600;700&display=swap'
+          href: 'https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap'
         }
       ]
     }

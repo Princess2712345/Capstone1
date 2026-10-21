@@ -53,13 +53,13 @@ async function submit() {
 </script>
 
 <template>
-  <div class="desk">
-    <header class="desk-head">
-      <p class="lp-eyebrow">Patient portal</p>
+  <div>
+    <header>
+      <p class="vc-kicker">Patient portal</p>
       <h1>Create a resident account.</h1>
-      <p class="lp-lede">Pick your barangay. The City Health Office issues a resident number and maps you to your home RHU or BHS.</p>
+      <p class="vc-lede">Pick your barangay. The City Health Office issues a resident number and maps you to your home RHU or BHS.</p>
     </header>
-    <form class="desk-panel desk-auth" @submit.prevent="submit">
+    <form class="pt-card" style="margin-top:18px" @submit.prevent="submit">
       <h2>Sign up</h2>
       <div class="form-grid form-grid-2">
         <label class="field"><span>Full name</span><input v-model="form.name" required></label>

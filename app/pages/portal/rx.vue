@@ -34,11 +34,11 @@ const shownVouchers = computed(() => {
 </script>
 
 <template>
-  <div class="desk">
-    <header class="desk-head">
-      <p class="lp-eyebrow">e-Prescription</p>
+  <div>
+    <header>
+      <p class="vc-kicker">Prescriptions</p>
       <h1>Show this QR at the RHU or BHS window.</h1>
-      <p class="lp-lede">One scan fills from the earliest-expiry lot. Fully used codes cannot be scanned again.</p>
+      <p class="vc-lede">One scan fills from the earliest-expiry lot. Fully used codes cannot be scanned again.</p>
     </header>
 
     <section class="desk-hero">

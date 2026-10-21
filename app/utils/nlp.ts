@@ -18,7 +18,7 @@ const LEXICON: Array<Omit<SymptomHit, 'phrase'> & { keys: string[] }> = [
     urgency: 9
   },
   {
-    keys: ['chest pain', 'sakit sa dughan', 'sakit sa dibdib', 'pressure in chest', 'crushing chest'],
+    keys: ['chest pain', 'chest discomfort', 'sakit sa dughan', 'sakit sa dibdib', 'pressure in chest', 'crushing chest'],
     system: 'Cardiovascular',
     icd10: 'R07.9',
     icdLabel: 'Chest pain, unspecified',
