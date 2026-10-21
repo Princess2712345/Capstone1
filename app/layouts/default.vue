@@ -50,7 +50,7 @@ async function goSearch() {
         <NuxtLink class="btn secondary" to="/" style="width:100%; margin-bottom:8px; display:block; text-align:center">Public site</NuxtLink>
         <button class="btn secondary" type="button" style="width:100%; margin-bottom:8px" @click="signOut">Sign out</button>
         <button class="btn secondary" type="button" style="width:100%; margin-bottom:12px" @click="resetOps">Restore baseline data</button>
-        Valencia City Health operations. Not a diagnostic device.
+        City Health Office · LGU Valencia City
       </div>
     </aside>
     <div class="workspace">

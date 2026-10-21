@@ -1,60 +1,90 @@
 <script setup lang="ts">
+import type { StaffRole } from '~/composables/useAuth'
+
 definePageMeta({ layout: 'auth' })
 
 const { login } = useAuth()
 const step = ref<'pick' | 'staff'>('pick')
-const role = ref<'BHW' | 'clinician' | 'CHO officer'>('BHW')
+const role = ref<StaffRole>('CHO officer')
 const email = ref('cho@valencia.gov.ph')
 const password = ref('careops')
 const error = ref('')
 
+const desks: { role: StaffRole; title: string; body: string; email: string; to: string }[] = [
+  {
+    role: 'BHW',
+    title: 'Barangay health worker',
+    body: 'Intake, barangay catchments, and referrals from BHS sites.',
+    email: 'bhw.mailag@valencia.gov.ph',
+    to: '/triage'
+  },
+  {
+    role: 'RHU clinician',
+    title: 'RHU clinician',
+    body: 'Consults, SOAP notes, and the live queue at the assigned facility.',
+    email: 'rhu1@valencia.gov.ph',
+    to: '/schedule'
+  },
+  {
+    role: 'CHO officer',
+    title: 'CHO / LGU administrator',
+    body: 'City-wide queues, load, facilities, and reports.',
+    email: 'cho@valencia.gov.ph',
+    to: '/ops'
+  }
+]
+
+function pickRole(next: (typeof desks)[number]) {
+  role.value = next.role
+  email.value = next.email
+}
+
 async function submit() {
   error.value = login(email.value, password.value) ?? ''
-  if (!error.value) await navigateTo('/ops')
+  if (error.value) return
+  const desk = desks.find(d => d.role === role.value)
+  await navigateTo(desk?.to ?? '/ops')
 }
 </script>
 
 <template>
   <div>
     <template v-if="step === 'pick'">
-      <p class="vc-kicker">Welcome to Valencia Care</p>
-      <h1>Patients and care teams use separate entry points.</h1>
-      <p class="vc-lede">Every workspace starts with the right access and privacy controls.</p>
+      <p class="vc-kicker">Valencia Care</p>
+      <h1>Choose how you enter the municipal network.</h1>
+      <p class="vc-lede">Patients and LGU staff use separate workspaces so records stay in the right hands.</p>
       <button class="access-card" type="button" @click="navigateTo('/portal/login')">
         <strong>Patient access</strong>
-        <div class="muted">Sign in or create a patient account</div>
+        <div class="muted">Book, queue, records, and e-prescriptions</div>
       </button>
       <button class="access-card" type="button" @click="step = 'staff'">
         <strong>Staff and LGU access</strong>
-        <div class="muted">Healthcare worker, doctor, or administrator</div>
+        <div class="muted">BHW, RHU clinician, pharmacist, or CHO officer</div>
       </button>
-      <p class="muted">This prototype uses sample data. Production accounts would require verified identity and role approval.</p>
     </template>
 
     <template v-else>
       <button class="vc-link" type="button" @click="step = 'pick'">← Back to access options</button>
-      <h1>Welcome <span class="vc-accent">back.</span></h1>
-      <p class="vc-lede">Staff access is provisioned by the municipal health office and restricted by role.</p>
+      <h1>Staff workspace</h1>
+      <p class="vc-lede">Sign in with your City Health Office account. Access follows your assigned role and facility.</p>
       <form class="pt-card" style="margin-top:18px" @submit.prevent="submit">
-        <p class="pt-kicker">Staff workspace sign in</p>
+        <p class="pt-kicker">LGU sign in</p>
         <p>I am signing in as</p>
-        <button class="access-card" :class="{ on: role === 'BHW' }" type="button" @click="role = 'BHW'">
-          <strong>Healthcare worker</strong>
-          <div class="muted">Coordinate intake, queues, and referrals</div>
+        <button
+          v-for="d in desks"
+          :key="d.role"
+          class="access-card"
+          :class="{ on: role === d.role }"
+          type="button"
+          @click="pickRole(d)"
+        >
+          <strong>{{ d.title }}</strong>
+          <div class="muted">{{ d.body }}</div>
         </button>
-        <button class="access-card" :class="{ on: role === 'clinician' }" type="button" @click="role = 'clinician'">
-          <strong>Doctor</strong>
-          <div class="muted">Consult and update clinical records</div>
-        </button>
-        <button class="access-card" :class="{ on: role === 'CHO officer' }" type="button" @click="role = 'CHO officer'">
-          <strong>LGU administrator</strong>
-          <div class="muted">Monitor the municipal network</div>
-        </button>
-        <label class="field"><span>Work email or staff ID</span><input v-model="email" type="email" required></label>
+        <label class="field"><span>Work email</span><input v-model="email" type="email" required></label>
         <label class="field" style="margin-top:12px"><span>Password</span><input v-model="password" type="password" required></label>
         <p v-if="error" class="field-error">{{ error }}</p>
-        <button class="btn" type="submit" style="width:100%; margin-top:16px">Open staff workspace</button>
-        <p class="muted" style="margin-top:12px">Demo: cho@valencia.gov.ph / careops</p>
+        <button class="btn" type="submit" style="width:100%; margin-top:16px">Open workspace</button>
       </form>
     </template>
   </div>

@@ -1074,10 +1074,8 @@ tbody tr:hover td {
 }
 
 .lp-nav::after {
-  content: "";
-  display: block;
-  height: 3px;
-  background: linear-gradient(90deg, #c4a035, #1e3a8a 55%, #c4a035);
+  content: none;
+  display: none;
 }
 
 .lp-nav-inner {
@@ -1275,9 +1273,9 @@ tbody tr:hover td {
 .lp-eyebrow {
   margin: 0 0 12px;
   font-size: 11px;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #8a7430;
+  color: #2563eb;
   font-weight: 700;
 }
 

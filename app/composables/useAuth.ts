@@ -17,7 +17,9 @@ export interface StaffSession {
 
 const SEED: StaffAccount[] = [
   { name: 'Dr. Liza Ampo', email: 'cho@valencia.gov.ph', password: 'careops', role: 'CHO officer', facility: 'City Health Office' },
-  { name: 'Elena Mailag', email: 'bhw.mailag@valencia.gov.ph', password: 'careops', role: 'BHW', facility: 'BHS Mailag' }
+  { name: 'Dr. Ramon Santos', email: 'rhu1@valencia.gov.ph', password: 'careops', role: 'RHU clinician', facility: 'Valencia RHU 1' },
+  { name: 'Elena Mailag', email: 'bhw.mailag@valencia.gov.ph', password: 'careops', role: 'BHW', facility: 'BHS Mailag' },
+  { name: 'Junrey Dispensing', email: 'pharmacy@valencia.gov.ph', password: 'careops', role: 'Pharmacist', facility: 'Valencia RHU 1' }
 ]
 
 export function useAuth() {
@@ -30,7 +32,15 @@ export function useAuth() {
     sameSite: 'lax'
   })
 
+  function ensureSeed() {
+    const list = accounts.value ?? []
+    const have = new Set(list.map(a => a.email.toLowerCase()))
+    const missing = SEED.filter(s => !have.has(s.email.toLowerCase()))
+    if (missing.length) accounts.value = [...list, ...missing]
+  }
+
   function login(email: string, password: string) {
+    ensureSeed()
     const list = accounts.value ?? SEED
     const match = list.find(
       a => a.email.toLowerCase() === email.trim().toLowerCase() && a.password === password
@@ -73,5 +83,5 @@ export function useAuth() {
     session.value = null
   }
 
-  return { accounts, session, login, signup, registerStaff, logout }
+  return { accounts, session, login, signup, registerStaff, logout, ensureSeed }
 }

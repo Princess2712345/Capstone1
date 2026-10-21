@@ -48,8 +48,8 @@ function assign() {
         <div class="brand-kicker" style="color: var(--gold)">Module 1 · NLP specialty routing</div>
         <h1>Universal symptom intake</h1>
         <p class="lede">
-          Prototype classifier reads English or Cebuano complaints, maps ICD-10 cues,
-          scores ESI 1–5, and load-balances across Valencia consultants. High acuity never waits in OPD.
+          Reads English or Cebuano complaints, maps ICD-10 cues, scores ESI 1–5,
+          and load-balances across Valencia consultants. High acuity never waits in OPD.
         </p>
       </div>
       <NuxtLink class="btn secondary" to="/patients">Open registry</NuxtLink>
