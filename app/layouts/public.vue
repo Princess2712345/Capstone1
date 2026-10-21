@@ -10,11 +10,9 @@
           </span>
         </NuxtLink>
         <nav class="lp-links" aria-label="Primary">
-          <a href="#how-it-works">How it works</a>
-          <a href="#features">Platform features</a>
-          <a href="#privacy">Privacy &amp; security</a>
-          <NuxtLink to="/portal/login">Patient</NuxtLink>
-          <NuxtLink class="lp-cta" to="/login">Staff workers →</NuxtLink>
+          <NuxtLink to="/#how-it-works">How it works</NuxtLink>
+          <NuxtLink to="/#features">Platform features</NuxtLink>
+          <NuxtLink to="/#privacy">Privacy &amp; security</NuxtLink>
         </nav>
       </div>
     </header>

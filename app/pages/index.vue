@@ -1,15 +1,6 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'public' })
 
-const journey = [
-  { t: '08:12 AM', k: 'Patient describes symptoms', h: 'Ana shares what she’s feeling', b: 'Ana Reyes, 42, reports chest discomfort and difficulty breathing from her phone.', c: 'teal' },
-  { t: '08:13 AM', k: 'AI-assisted recommendation', h: 'Cardiology is suggested', b: 'The platform explains why Cardiology may be appropriate, while reminding Ana that this is not a diagnosis.', c: 'violet' },
-  { t: '08:16 AM', k: 'Scheduling across the network', h: 'Ana chooses Valencia RHU 1', b: 'She sees a cardiology window at 9:30 AM, with estimated wait time and an appointment QR code.', c: 'blue' },
-  { t: '09:18 AM', k: 'Check-in & live queue', h: 'The care team sees her arrival', b: 'A staff member scans her health ID, records vitals, and places her in queue A-014.', c: 'green' },
-  { t: '09:42 AM', k: 'Consultation & record update', h: 'The doctor completes a SOAP note', b: 'The clinician reviews the shared record, makes the clinical decision, and saves the consultation.', c: 'violet' },
-  { t: '10:05 AM', k: 'Continuity of care', h: 'Prescription and follow-up stay connected', b: 'Ana tracks her prescription, receives a referral, and sees her follow-up in one place.', c: 'orange' }
-]
-
 const steps = [
   { n: '01', title: 'Describe', body: 'Share what you’re experiencing in plain language.', c: 'teal' },
   { n: '02', title: 'Route', body: 'See an AI-assisted specialty recommendation.', c: 'blue' },
@@ -28,59 +19,71 @@ const features = [
 </script>
 
 <template>
-  <div>
+  <div class="lp-page">
+    <div class="lp-leaves" aria-hidden="true">
+      <span class="leaf leaf-a" />
+      <span class="leaf leaf-b" />
+      <span class="leaf leaf-c" />
+      <span class="plus plus-a">+</span>
+      <span class="plus plus-b">+</span>
+      <span class="heart">♥</span>
+    </div>
+
     <section class="lp-hero">
       <div class="lp-wrap lp-hero-grid">
         <div>
-          <p class="lp-kicker">Example scenario · Ana’s care journey</p>
+          <p class="lp-kicker">City Health Office · LGU Valencia City</p>
           <h1>See how one visit <span>moves</span> through the network.</h1>
           <p class="lp-lede">
-            A walkthrough for a fictional patient — so residents and care teams can see how a visit moves through Valencia Care.
+            Valencia Care helps residents and municipal care teams coordinate appointments, queues, records, and e-prescriptions in one place.
           </p>
           <div class="lp-actions">
-            <NuxtLink class="lp-cta lp-cta-lg" to="/portal/login">Patient →</NuxtLink>
-            <NuxtLink class="lp-cta-ghost lp-cta-lg" to="/login">Staff workers →</NuxtLink>
+            <NuxtLink class="lp-cta" to="/portal/login">Patient →</NuxtLink>
+            <NuxtLink class="lp-cta-ghost" to="/login">Staff workers →</NuxtLink>
           </div>
         </div>
-        <aside class="lp-timeline-card">
-          <h2>Ana Reyes · Cardiology pathway</h2>
-          <ol>
-            <li v-for="j in journey" :key="j.t" :class="'tone-' + j.c">
-              <i aria-hidden="true" />
-              <div>
-                <p class="lp-when">{{ j.t }} · {{ j.k }}</p>
-                <strong>{{ j.h }}</strong>
-                <p>{{ j.b }}</p>
-              </div>
-            </li>
-          </ol>
+        <aside class="lp-care" aria-hidden="true">
+          <div class="lp-care-pulse" />
+          <svg class="lp-care-heart" viewBox="0 0 64 64" fill="none">
+            <path d="M32 54S12 40 8 26c-2-8 4-16 12-16 5 0 8 3 12 8 4-5 7-8 12-8 8 0 14 8 12 16-4 14-24 28-24 28Z" fill="#12b5a0"/>
+          </svg>
+          <svg class="lp-ecg" viewBox="0 0 360 80" fill="none">
+            <path class="lp-ecg-line" d="M0 40 H48 L58 40 L68 12 L82 68 L94 40 H150 L160 40 L170 18 L184 62 L196 40 H360" />
+          </svg>
+          <div class="lp-float-chip lp-float-a">RHU</div>
+          <div class="lp-float-chip lp-float-b">BHS</div>
+          <div class="lp-float-chip lp-float-c">CHO</div>
         </aside>
       </div>
     </section>
 
     <section class="lp-network">
       <div class="lp-wrap lp-network-grid">
-        <article class="lp-network-copy">
+        <article>
           <p class="lp-kicker">The Valencia Care network</p>
           <h2>Connected care. Closer to home.</h2>
           <p class="lp-lede">
             Valencia Care connects patients, healthcare workers, doctors, and local facilities in one calm, coordinated health network.
           </p>
-          <NuxtLink class="lp-cta" to="/portal/login">Explore the patient portal →</NuxtLink>
           <p class="lp-ok">Designed around privacy, consent, and continuity of care.</p>
         </article>
         <div class="lp-map" aria-hidden="true">
-          <button class="lp-node lp-node-rhu" type="button">RHU 1</button>
-          <button class="lp-node lp-node-doc" type="button">Doctor</button>
+          <svg class="lp-map-lines" viewBox="0 0 360 240" fill="none">
+            <path d="M90 70 C140 70, 150 110, 180 120" stroke="#9ad9cc" stroke-width="2" stroke-dasharray="5 7" />
+            <path d="M270 70 C220 70, 210 110, 180 120" stroke="#9ad9cc" stroke-width="2" stroke-dasharray="5 7" />
+            <path d="M90 190 C140 190, 150 140, 180 128" stroke="#9ad9cc" stroke-width="2" stroke-dasharray="5 7" />
+          </svg>
+          <div class="lp-node lp-node-rhu"><span class="lp-node-ico teal">⌂</span> RHU 1</div>
+          <div class="lp-node lp-node-doc"><span class="lp-node-ico blue">✚</span> Doctor</div>
           <div class="lp-core">Patient</div>
-          <button class="lp-node lp-node-bhs" type="button">BHS</button>
+          <div class="lp-node lp-node-bhs"><span class="lp-node-ico teal">▤</span> BHS</div>
         </div>
       </div>
     </section>
 
     <section id="how-it-works" class="lp-journey">
-      <div class="lp-wrap lp-journey-grid">
-        <header>
+      <div class="lp-wrap">
+        <header class="lp-head">
           <p class="lp-kicker">A simpler care journey</p>
           <h2>One platform, <span>every step</span> of the patient journey.</h2>
           <p class="lp-lede">From first symptom to follow-up, Valencia Care helps local teams keep the whole picture in view.</p>
@@ -97,7 +100,7 @@ const features = [
 
     <section id="features" class="lp-features">
       <div class="lp-wrap">
-        <header>
+        <header class="lp-head">
           <p class="lp-kicker">The Valencia Care platform</p>
           <h2>Built for the rhythm of municipal care.</h2>
         </header>
@@ -110,28 +113,30 @@ const features = [
       </div>
     </section>
 
-    <section id="privacy" class="lp-privacy">
-      <div class="lp-wrap lp-privacy-grid">
-        <div>
+    <footer id="privacy" class="lp-foot">
+      <div class="lp-foot-band">
+        <div class="lp-wrap lp-foot-cta">
           <p class="lp-kicker light">A simpler care journey</p>
           <h2>See how one visit <span>moves</span> through the network.</h2>
-          <p>Routing is assistive. Clinical decisions stay with licensed staff. Access is limited by role and consent.</p>
-          <NuxtLink class="lp-cta lp-cta-light" to="/login">Staff workspace →</NuxtLink>
         </div>
-        <aside class="lp-timeline-card lp-timeline-compact">
-          <h2>Ana Reyes · Cardiology pathway</h2>
-          <ol>
-            <li v-for="j in journey.slice(0, 3)" :key="j.t" :class="'tone-' + j.c">
-              <i aria-hidden="true" />
-              <div>
-                <p class="lp-when">{{ j.t }} · {{ j.k }}</p>
-                <strong>{{ j.h }}</strong>
-                <p>{{ j.b }}</p>
-              </div>
-            </li>
-          </ol>
-        </aside>
       </div>
-    </section>
+      <div class="lp-foot-bar">
+        <div class="lp-wrap lp-foot-inner">
+          <NuxtLink to="/" class="lp-brand">
+            <BrandMark size="sm" />
+            <span>
+              <strong>Valencia Care</strong>
+              <em>Municipal health network</em>
+            </span>
+          </NuxtLink>
+          <nav>
+            <a href="#how-it-works">How it works</a>
+            <a href="#features">Platform features</a>
+            <a href="#privacy">Privacy &amp; security</a>
+          </nav>
+          <p>Your health. Our priority.</p>
+        </div>
+      </div>
+    </footer>
   </div>
 </template>
